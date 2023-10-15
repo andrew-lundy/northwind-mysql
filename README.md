@@ -1,4 +1,5 @@
 # northwind-mysql-queries
+```
 -- For each order, calculate a subtotal. 
 SELECT order_id, SUM(OrderDetails.Quantity * Products.Price) as Subtotal, COUNT(ProductID) as "Products"
 FROM Orders JOIN OrderDetails USING (OrderID)
@@ -53,3 +54,4 @@ SELECT DISTINCT products.*
 FROM products
 WHERE products.discontinued = 0
 ORDER BY products.product_name;
+```
