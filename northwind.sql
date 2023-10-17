@@ -1,3 +1,4 @@
+-- https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php
 -- For each order, calculate a subtotal. 
 SELECT order_id, SUM(OrderDetails.Quantity * Products.Price) as Subtotal, COUNT(ProductID) as "Products"
 FROM Orders JOIN OrderDetails USING (OrderID)
@@ -58,3 +59,8 @@ SELECT DISTINCT products.*
 FROM products
 WHERE products.discontinued = 0;
 
+-- Order details extended; This query calculates sales price for each order after discount is applied.
+SELECT order_details.order_id as OrderID, order_details.product_id as ProductID, products.product_name as ProductName, order_details.unit_price as UnitPrice, order_details.quantity as Quantity, order_details.discount as OrderDiscount, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+FROM order_details
+JOIN products ON order_details.product_id = products.product_id
+GROUP BY OrderID, ProductID, UnitPrice, Quantity, OrderDiscount;
