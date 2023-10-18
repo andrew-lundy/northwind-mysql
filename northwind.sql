@@ -68,3 +68,9 @@ FROM categories
 JOIN products USING (category_id)
 JOIN order_details USING (product_id)
 GROUP BY categories.category_id, categories.category_name, products.product_name;
+
+-- Ten most expensive products
+SELECT products.product_name, products.unit_price
+FROM products
+ORDER BY products.unit_price DESC
+LIMIT 10;
