@@ -65,3 +65,10 @@ SELECT order_details.order_id as OrderID, order_details.product_id as ProductID,
 FROM order_details
 JOIN products ON order_details.product_id = products.product_id
 GROUP BY OrderID, ProductID, UnitPrice, Quantity, OrderDiscount;
+
+-- Sales by Category; For each category, we get the list of products sold and the total sales amount.
+SELECT categories.category_id, categories.category_name, products.product_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+FROM categories
+JOIN products USING (category_id)
+JOIN order_details USING (product_id)
+GROUP BY categories.category_id, categories.category_name, products.product_name;
