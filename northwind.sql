@@ -94,3 +94,31 @@ FROM customers
 UNION
 SELECT suppliers.city, suppliers.company_name, suppliers.contact_name, 'Suppliers'
 FROM suppliers;
+
+-- Products above average price
+SELECT products.product_name, products.unit_price
+FROM products
+WHERE products.unit_price > (
+	SELECT AVG(products.unit_price)
+	FROM products
+)
+ORDER BY products.unit_price;
+
+-- Product sales for 1997
+SELECT orders.order_id, categories.category_name, products.product_name, order_details.quantity, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+FROM orders
+JOIN order_details ON orders.order_id = order_details.order_id
+JOIN products ON order_details.product_id = products.product_id
+JOIN categories ON products.category_id = categories.category_id
+WHERE YEAR(orders.order_date) = 1997
+GROUP BY orders.order_id, categories.category_name, products.product_name, order_details.quantity;
+
+-- Category sales for 1997
+SELECT categories.category_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+FROM orders
+JOIN order_details ON orders.order_id = order_details.order_id
+JOIN products ON order_details.product_id = products.product_id
+JOIN categories ON products.category_id = categories.category_id
+WHERE YEAR(orders.order_date) = 1997
+GROUP BY categories.category_name;
+
