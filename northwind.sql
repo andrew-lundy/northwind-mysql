@@ -44,33 +44,53 @@ JOIN (
 ON orders.order_id = b.order_id
 ORDER BY employees.first_name, employees.last_name, orders.ship_country;
 
--- Alphabetical List of Products
+-- Alphabetical list of products
 SELECT DISTINCT products.*
 FROM products
 WHERE products.discontinued = 0
 ORDER BY products.product_name;
 
--- Current Product List
+-- Current product list
 SELECT DISTINCT products.*
 FROM products
 WHERE products.discontinued = 0;
 
 -- Start of "Part 2" (https://www.geeksengine.com/database/problem-solving/northwind-queries-part-2.php)
--- Order details extended; This query calculates sales price for each order after discount is applied.
+-- Order details extended; this query calculates sales price for each order after discount is applied.
 SELECT order_details.order_id as OrderID, order_details.product_id as ProductID, products.product_name as ProductName, order_details.unit_price as UnitPrice, order_details.quantity as Quantity, order_details.discount as OrderDiscount, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
 FROM order_details
 JOIN products ON order_details.product_id = products.product_id
 GROUP BY OrderID, ProductID, UnitPrice, Quantity, OrderDiscount;
 
--- Sales by Category; For each category, we get the list of products sold and the total sales amount.
-SELECT categories.category_id, categories.category_name, products.product_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+-- Sales by category; for each category, we get the list of products sold and the total sales amount.
+SELECT categories.category_name, products.product_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
 FROM categories
 JOIN products USING (category_id)
 JOIN order_details USING (product_id)
 GROUP BY categories.category_id, categories.category_name, products.product_name;
 
--- Ten most expensive products
+-- Ten most expensive producs
 SELECT products.product_name, products.unit_price
 FROM products
 ORDER BY products.unit_price DESC
 LIMIT 10;
+
+-- Products by category
+SELECT DISTINCT categories.category_name, products.product_name
+FROM categories
+JOIN products ON categories.category_id = products.category_id
+ORDER BY categories.category_name, products.product_name;
+
+-- Active products by category
+SELECT DISTINCT categories.category_name, products.product_name, products.discontinued
+FROM categories
+JOIN products ON categories.category_id = products.category_id
+WHERE products.discontinued = 0
+ORDER BY categories.category_name, products.product_name;
+
+-- Customers and suppliers by city
+SELECT customers.city, customers.company_name, customers.contact_name, 'Customers' AS Relationship
+FROM customers
+UNION
+SELECT suppliers.city, suppliers.company_name, suppliers.contact_name, 'Suppliers'
+FROM suppliers;
