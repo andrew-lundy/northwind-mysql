@@ -149,3 +149,33 @@ JOIN customers ON orders.customer_id = customers.customer_id
 WHERE YEAR(orders.order_date) = 1997
 GROUP BY products.product_name, customers.company_name, YEAR(orders.order_date)
 ORDER BY products.product_name, customers.company_name;
+
+-- Invoice; A simple query to get detailed information for each sale so that invoice can be issued.
+SELECT orders.order_id AS OrderID,
+    customers.company_name AS CustomerCompany, 
+    customers.contact_name AS CustomerContact, 
+    customers.phone AS CustomerPhone,
+    orders.employee_id AS EmployeeOfSale, 
+    CONCAT(employees.first_name, " ", employees.last_name) AS SalesPerson,
+    order_details.quantity AS ProductCount,
+    products.product_name AS ProductName,
+    order_details.unit_price * order_details.quantity * (1 - discount) as Subtotal,
+    orders.order_date AS OrderDate, 
+    orders.required_date AS RequiredDate, 
+    orders.shipped_date AS ShippedDate, 
+    shippers.company_name AS ShippingCompany,
+    shippers.phone AS ShippingCoPhone,
+    orders.freight AS Freight,
+    orders.ship_name AS ShippingLabelName, 
+    orders.ship_address AS ShippingLabelAddress, 
+    orders.ship_city AS ShippingLabelCity,
+    orders.ship_postal_code AS ShippingLabelZIP, 
+    orders.ship_country AS ShippingLabelCountry
+FROM orders
+JOIN order_details ON orders.order_id = order_details.order_id
+JOIN customers ON orders.customer_id = customers.customer_id
+JOIN products ON order_details.product_id = products.product_id
+JOIN employees ON orders.employee_id = employees.employee_id
+JOIN shippers ON orders.ship_via = shippers.shipper_id
+WHERE orders.order_id = 10643
+ORDER BY orders.order_id;
