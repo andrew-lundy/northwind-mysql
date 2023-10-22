@@ -177,5 +177,33 @@ JOIN customers ON orders.customer_id = customers.customer_id
 JOIN products ON order_details.product_id = products.product_id
 JOIN employees ON orders.employee_id = employees.employee_id
 JOIN shippers ON orders.ship_via = shippers.shipper_id
-WHERE orders.order_id = 10643
 ORDER BY orders.order_id;
+
+-- Number of units in stock by category and supplier continent
+SELECT categories.category_name AS Category, suppliers.region AS Region, SUM(products.units_in_stock) AS UnitsInStock
+FROM categories
+JOIN products ON categories.category_id = products.category_id
+JOIN suppliers ON products.supplier_id = suppliers.supplier_id
+GROUP BY categories.category_name, suppliers.region;
+
+-- OR
+SELECT categories.category_name AS Category,
+	CASE
+		WHEN suppliers.country IN ('UK', 'Sweden', 'Germany', 'France', 'Italy', 'Spain', 'Denmark', 'Netherlands', 'Finland', 'Norway') THEN 'EMEA'
+        WHEN suppliers.country IN ('USA', 'Canada') THEN 'NA'
+        WHEN suppliers.country IN ('Brazil') THEN 'LATAM'
+        WHEN suppliers.country IN ('Japan', 'Singapore', 'Australia') THEN 'APAC'
+        ELSE 'Unknown country; cannot find region'
+    END as 'SupplierContinent', 
+    SUM(products.units_in_stock) AS UnitsInStock
+FROM categories
+JOIN products ON categories.category_id = products.category_id
+JOIN suppliers ON products.supplier_id = suppliers.supplier_id
+GROUP BY categories.category_name, 
+	CASE
+		WHEN suppliers.country IN ('UK', 'Sweden', 'Germany', 'France', 'Italy', 'Spain', 'Denmark', 'Netherlands', 'Finland', 'Norway') THEN 'EMEA'
+        WHEN suppliers.country IN ('USA', 'Canada') THEN 'NA'
+        WHEN suppliers.country IN ('Brazil') THEN 'LATAM'
+        WHEN suppliers.country IN ('Japan', 'Singapore', 'Australia') THEN 'APAC'
+        ELSE 'Unknown country; cannot find region'
+    END;
