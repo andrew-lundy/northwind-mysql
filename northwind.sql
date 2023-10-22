@@ -95,6 +95,7 @@ UNION
 SELECT suppliers.city, suppliers.company_name, suppliers.contact_name, 'Suppliers'
 FROM suppliers;
 
+-- Start of "Part 3" (https://www.geeksengine.com/database/problem-solving/northwind-queries-part-3.php)
 -- Products above average price
 SELECT products.product_name, products.unit_price
 FROM products
