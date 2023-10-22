@@ -122,3 +122,30 @@ JOIN categories ON products.category_id = categories.category_id
 WHERE YEAR(orders.order_date) = 1997
 GROUP BY categories.category_name;
 
+
+
+-- Quarterly Orders by Product
+SELECT products.product_name, customers.company_name, YEAR(orders.order_date),
+	FORMAT(SUM(CASE QUARTER(orders.order_date) 
+					WHEN '1' THEN order_details.unit_price * order_details.quantity * (1 - discount) 
+						ELSE 0 
+                    END), 0) AS "Qtr 1",
+	FORMAT(SUM(CASE QUARTER(orders.order_date) 
+					WHEN '2' THEN order_details.unit_price * order_details.quantity * (1 - discount) 
+						ELSE 0 
+                    END), 0) AS "Qtr 2",
+	FORMAT(SUM(CASE QUARTER(orders.order_date) 
+					WHEN '3' THEN order_details.unit_price * order_details.quantity * (1 - discount) 
+						ELSE 0 
+                    END), 0) AS "Qtr 3",        
+	FORMAT(SUM(CASE QUARTER(orders.order_date) 
+					WHEN '4' THEN order_details.unit_price * order_details.quantity * (1 - discount) 
+						ELSE 0 
+                    END), 0) AS "Qtr 4"
+FROM products
+JOIN order_details ON products.product_id = order_details.product_id
+JOIN orders ON order_details.order_id = orders.order_id
+JOIN customers ON orders.customer_id = customers.customer_id
+WHERE YEAR(orders.order_date) = 1997
+GROUP BY products.product_name, customers.company_name, YEAR(orders.order_date)
+ORDER BY products.product_name, customers.company_name;
