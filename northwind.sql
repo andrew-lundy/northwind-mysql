@@ -208,3 +208,29 @@ GROUP BY categories.category_name,
         WHEN suppliers.country IN ('Japan', 'Singapore', 'Australia') THEN 'APAC'
         ELSE 'Unknown country; cannot find region'
     END;
+    
+    
+-- Start of custom queries; focused on product performance
+-- Top categories per region
+SELECT products.product_name, categories.category_name, orders.ship_region
+FROM products
+JOIN categories ON products.category_id = categories.category_id
+JOIN order_details ON products.product_id = order_details.product_id
+JOIN orders ON order_details.order_id = orders.order_id
+WHERE orders.ship_region IS NOT NULL;
+
+SELECT * FROM region;
+ALTER TABLE region
+CHANGE region_description region_name VARCHAR(10);
+
+UPDATE region
+SET region_name = 'APAC'
+WHERE region_id = 4;
+
+SELECT * FROM territories;
+
+
+SELECT orders.ship_city, orders.ship_region, orders.ship_country
+FROM orders;
+
+SELECT * FROM suppliers;
