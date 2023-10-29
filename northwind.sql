@@ -219,15 +219,25 @@ JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 WHERE orders.ship_region IS NOT NULL;
 
-SELECT * FROM region;
-ALTER TABLE region
-CHANGE region_description region_name VARCHAR(10);
+-- Updating the territories table
+SELECT * FROM territories
+ORDER BY region_id, territory_description;
 
-UPDATE region
-SET region_name = 'APAC'
-WHERE region_id = 4;
+UPDATE territories
+SET territories.territory_description = 'Westborough'
+WHERE territories.territory_id = 01581;
 
-SELECT * FROM territories;
+DELETE FROM territories
+WHERE territory_id = 10038;
+
+UPDATE territories
+SET territories.region_id = 2
+WHERE territories.territory_id = 11747;
+
+SET SQL_SAFE_UPDATES = 0;
+DESCRIBE territories;
+
+
 
 
 SELECT orders.ship_city, orders.ship_region, orders.ship_country
