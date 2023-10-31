@@ -223,21 +223,38 @@ WHERE orders.ship_region IS NOT NULL;
 SELECT * FROM territories
 ORDER BY region_id, territory_description;
 
+SELECT * FROM orders
+WHERE NOT ship_country = 'Argentina' AND NOT ship_country = 'Austria' AND NOT ship_country = 'Belgium' AND NOT ship_country = 'Brazil'
+	AND NOT ship_country = 'Canada' AND NOT ship_country = 'Denmark' AND NOT ship_country = 'Finland' AND NOT ship_country = 'France'
+	AND NOT ship_country = 'France' AND NOT ship_country = 'Germany' AND NOT ship_country = 'Ireland' AND NOT ship_country = 'Ireland'
+ORDER BY ship_country, ship_city;
+
+INSERT INTO territories
+VALUES ('10100', 'Torino', 1);
+
+UPDATE territories
+SET territory_id = '20050-060'
+WHERE territory_id = '20050060';
+
+SELECT * FROM customers
+ORDER BY country;
+
+SELECT * FROM suppliers
+ORDER BY region;
+
+SELECT * FROM employees;
+
+DESCRIBE territories;
+
 UPDATE territories
 SET territories.territory_description = 'Westborough'
-WHERE territories.territory_id = 01581;
-
-DELETE FROM territories
-WHERE territory_id = 10038;
+WHERE territories.territory_id = 02139;
 
 UPDATE territories
 SET territories.region_id = 2
-WHERE territories.territory_id = 11747;
+WHERE territories.territory_id = 03049;
 
 SET SQL_SAFE_UPDATES = 0;
-DESCRIBE territories;
-
-
 
 
 SELECT orders.ship_city, orders.ship_region, orders.ship_country
