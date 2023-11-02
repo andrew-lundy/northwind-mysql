@@ -224,13 +224,16 @@ SELECT * FROM territories
 ORDER BY region_id, territory_description;
 
 SELECT * FROM orders
-WHERE NOT ship_country = 'Argentina' AND NOT ship_country = 'Austria' AND NOT ship_country = 'Belgium' AND NOT ship_country = 'Brazil'
-	AND NOT ship_country = 'Canada' AND NOT ship_country = 'Denmark' AND NOT ship_country = 'Finland' AND NOT ship_country = 'France'
-	AND NOT ship_country = 'France' AND NOT ship_country = 'Germany' AND NOT ship_country = 'Ireland' AND NOT ship_country = 'Ireland'
 ORDER BY ship_country, ship_city;
 
 INSERT INTO territories
-VALUES ('10100', 'Torino', 1);
+VALUES ('S-958 22', 'Luleå', 1);
+
+SELECT * FROM territories
+WHERE territory_description = 'México D.F.';
+
+DELETE FROM territories
+WHERE territory_description = 'México D.F.' AND region_id = 3;
 
 UPDATE territories
 SET territory_id = '20050-060'
