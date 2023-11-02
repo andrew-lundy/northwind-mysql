@@ -227,7 +227,7 @@ SELECT * FROM orders
 ORDER BY ship_country, ship_city;
 
 INSERT INTO territories
-VALUES ('S-958 22', 'Luleå', 1);
+VALUES ('OX15 4NB', 'London', 1);
 
 SELECT * FROM territories
 WHERE territory_description = 'México D.F.';
