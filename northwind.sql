@@ -220,14 +220,15 @@ JOIN orders ON order_details.order_id = orders.order_id
 WHERE orders.ship_region IS NOT NULL;
 
 -- Updating the territories table
+SET SQL_SAFE_UPDATES = 0;
+
 SELECT * FROM territories
 ORDER BY region_id, territory_description;
 
-SELECT * FROM orders
-ORDER BY ship_country, ship_city;
+SELECT * FROM orders;
 
 INSERT INTO territories
-VALUES ('OX15 4NB', 'London', 1);
+VALUES ('99362', 'Walla Walla', 2);
 
 SELECT * FROM territories
 WHERE territory_description = 'México D.F.';
@@ -257,7 +258,6 @@ UPDATE territories
 SET territories.region_id = 2
 WHERE territories.territory_id = 03049;
 
-SET SQL_SAFE_UPDATES = 0;
 
 
 SELECT orders.ship_city, orders.ship_region, orders.ship_country
