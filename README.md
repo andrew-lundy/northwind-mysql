@@ -7,11 +7,11 @@ The queries making those changes are found in the commits of the [repo you are c
 <br><br>
 
 **The purpose** of this project is to get hands-on with MySQL and work with an existing database. To do this, I've laid out some milestones:<br>
-[ ] Update the regions used in the database to use the four main regions of the world (EMEA, NA, LATAM, APAC)<br>
-    [ ] Tables to Update<br>
-        [ ] Territories<br>
-        [ ] Employees<br>
-        [ ] Orders<br>
-        [ ] Customers<br>
-        [ ] Region<br>
-        [ ] Suppliers<br>
+- [ ] Update the regions used in the database to use the four main regions of the world (EMEA, NA, LATAM, APAC)<br>
+    - [ ] Tables to Update<br>
+        - [ ] Territories<br>
+        - [ ] Employees<br>
+        - [ ] Orders<br>
+        - [ ] Customers<br>
+        - [ ] Region<br>
+        - [ ] Suppliers<br>
