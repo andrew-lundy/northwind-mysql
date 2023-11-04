@@ -20,3 +20,4 @@ The queries making those changes are found in the commits of the [repo you are c
 - [ ] Add `region` column to `customers` table; use the new world regions
 - [ ] Update `ship_region` column in `orders` table to `state`
 - [ ] Add `ship_region` column to `orders` table; use the new world regions
+<br>
