@@ -6,12 +6,12 @@ I'm in the process of reworking the database to use world regions. The changes t
 The queries making those changes are found in the commits of the [repo you are currently viewing](https://github.com/andrew-lundy/northwind-mysql-queries/commits/dev).
 <br><br>
 
-**The purpose** of this project is to get hands-on with MySQL and work with an existing database. To do this, I've laid out some milestones:
-[ ] Update the regions used in the database to use the four main regions of the world (EMEA, NA, LATAM, APAC)
-    [ ] Tables to Update
-        [ ] Territories
-        [ ] Employees
-        [ ] Orders
-        [ ] Customers
-        [ ] Region
-        [ ] Suppliers
+**The purpose** of this project is to get hands-on with MySQL and work with an existing database. To do this, I've laid out some milestones:<br>
+[ ] Update the regions used in the database to use the four main regions of the world (EMEA, NA, LATAM, APAC)<br>
+    [ ] Tables to Update<br>
+        [ ] Territories<br>
+        [ ] Employees<br>
+        [ ] Orders<br>
+        [ ] Customers<br>
+        [ ] Region<br>
+        [ ] Suppliers<br>
