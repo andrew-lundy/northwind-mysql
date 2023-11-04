@@ -219,29 +219,21 @@ JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 WHERE orders.ship_region IS NOT NULL;
 
--- Updating the territories table
-SET SQL_SAFE_UPDATES = 0;
+-- Update region in country to state
+-- Update ship_region in orders to state
+-- Add region to both tables; fill in with world regions
+SET SQL_SAFE_UPDATES = 1;
 
 SELECT * FROM territories
 ORDER BY region_id, territory_description;
 
-SELECT * FROM orders;
-
-INSERT INTO territories
-VALUES ('99362', 'Walla Walla', 2);
-
-SELECT * FROM territories
-WHERE territory_description = 'México D.F.';
-
-DELETE FROM territories
-WHERE territory_description = 'México D.F.' AND region_id = 3;
-
-UPDATE territories
-SET territory_id = '20050-060'
-WHERE territory_id = '20050060';
+SELECT * FROM orders
+ORDER BY ship_region;
 
 SELECT * FROM customers
 ORDER BY country;
+
+SELECT * FROM orders;
 
 SELECT * FROM suppliers
 ORDER BY region;
