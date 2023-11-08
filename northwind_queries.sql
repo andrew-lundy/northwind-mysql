@@ -249,7 +249,11 @@ CREATE TABLE employees_updated (
     PRIMARY KEY (employee_id)
 );
 
+INSERT INTO employees_updated (employee_id, last_name, first_name, title, title_of_courtesy, birth_date, hire_date, address, city, state, postal_code, country, region, home_phone, extension, photo, notes, reports_to, photo_path)
+SELECT employee_id, last_name, first_name, title, title_of_courtesy, birth_date, hire_date, address, city, state, postal_code, country, region, home_phone, extension, photo, notes, reports_to, photo_path
+FROM employees;
 
+SELECT * FROM employees_updated;
 
 DESCRIBE employees;
 
