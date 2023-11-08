@@ -250,16 +250,15 @@ CREATE TABLE employees_updated (
 );
 
 SELECT * FROM employees_updated;
-
+SELECT * FROM employee_territories;
 DROP TABLE employees;
 
-ALTER TABLE orders
-DROP FOREIGN KEY orders_ibfk_2;
+ALTER TABLE employee_territories
+DROP FOREIGN KEY employee_territories_ibfk_2;
 
 SELECT * FROM orders;
 
-ALTER TABLE orders
-ADD CONSTRAINT orders_ibfk_2
+ALTER TABLE employee_territories
+ADD CONSTRAINT employee_territories_ibfk_2
 FOREIGN KEY (employee_id)
 REFERENCES employees_updated (employee_id);
-
