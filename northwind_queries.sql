@@ -224,22 +224,38 @@ WHERE orders.ship_region IS NOT NULL;
 -- Add region to both tables; fill in with world regions
 -- Add some orders with the APAC region
 SET SQL_SAFE_UPDATES = 0;
-SELECT * FROM territories;
-
-SELECT * FROM suppliers
-ORDER BY region;
-
 SELECT * FROM employees;
 
-UPDATE territories
-SET territories.territory_description = 'Westborough'
-WHERE territories.territory_id = 02139;
+CREATE TABLE employees_updated (
+	employee_id SMALLINT,
+    last_name VARCHAR(20) NOT NULL,
+    first_name VARCHAR(20) NOT NULL,
+    title VARCHAR(30),
+    title_of_courtesy VARCHAR(25),
+    birth_date DATE,
+    hire_date DATE,
+    address VARCHAR(60),
+    city VARCHAR(15),
+    state VARCHAR(15),
+    postal_code VARCHAR(10),
+    country VARCHAR(15),
+    region SMALLINT,
+    home_phone VARCHAR(24),
+    extension VARCHAR(4),
+    photo BLOB,
+    notes TEXT,
+    reports_to SMALLINT,
+    photo_path VARCHAR(255),
+    PRIMARY KEY (employee_id)
+);
 
-UPDATE territories
-SET territories.region_id = 2
-WHERE territories.territory_id = 03049;
 
 
+DESCRIBE employees;
+
+ALTER TABLE employees
+CHANGE region state VARCHAR(15);
+DESCRIBE employees;
 
 SELECT orders.ship_city, orders.ship_region, orders.ship_country
 FROM orders;
