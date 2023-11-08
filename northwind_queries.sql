@@ -224,7 +224,7 @@ WHERE orders.ship_region IS NOT NULL;
 -- Add region to both tables; fill in with world regions
 -- Add some orders with the APAC region
 SET SQL_SAFE_UPDATES = 0;
-SELECT * FROM orders;
+SELECT * FROM territories;
 
 SELECT * FROM suppliers
 ORDER BY region;
