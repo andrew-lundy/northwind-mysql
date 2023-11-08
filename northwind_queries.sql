@@ -249,9 +249,11 @@ CREATE TABLE employees_updated (
     PRIMARY KEY (employee_id)
 );
 
-SELECT * FROM employees_updated;
+SELECT * FROM employees;
 SELECT * FROM employee_territories;
 DROP TABLE employees;
+
+RENAME TABLE employees_updated TO employees;
 
 ALTER TABLE employee_territories
 DROP FOREIGN KEY employee_territories_ibfk_2;
