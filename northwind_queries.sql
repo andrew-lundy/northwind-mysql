@@ -222,25 +222,14 @@ WHERE orders.ship_region IS NOT NULL;
 -- Update region in country to state
 -- Update ship_region in orders to state
 -- Add region to both tables; fill in with world regions
-SET SQL_SAFE_UPDATES = 1;
-
-SELECT * FROM territories
-ORDER BY region_id, territory_description;
-
-SELECT * FROM orders
-ORDER BY ship_region;
-
-SELECT * FROM customers
-ORDER BY country;
-
+-- Add some orders with the APAC region
+SET SQL_SAFE_UPDATES = 0;
 SELECT * FROM orders;
 
 SELECT * FROM suppliers
 ORDER BY region;
 
 SELECT * FROM employees;
-
-DESCRIBE territories;
 
 UPDATE territories
 SET territories.territory_description = 'Westborough'
