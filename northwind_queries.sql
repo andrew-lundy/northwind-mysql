@@ -249,18 +249,7 @@ CREATE TABLE employees_updated (
     PRIMARY KEY (employee_id)
 );
 
+UPDATE employees
+SET region = 1
+WHERE employee_id = 5 OR employee_id = 6 OR employee_id = 7 OR employee_id = 9;
 SELECT * FROM employees;
-SELECT * FROM employee_territories;
-DROP TABLE employees;
-
-RENAME TABLE employees_updated TO employees;
-
-ALTER TABLE employee_territories
-DROP FOREIGN KEY employee_territories_ibfk_2;
-
-SELECT * FROM orders;
-
-ALTER TABLE employee_territories
-ADD CONSTRAINT employee_territories_ibfk_2
-FOREIGN KEY (employee_id)
-REFERENCES employees_updated (employee_id);
