@@ -9,12 +9,12 @@ The changes to the database itself can be found [here](https://github.com/andrew
 - [x] Finish the queries from [geeksengine.com](https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php)
 - [ ] Update the regions used in the database to use the four main regions of the world (EMEA, NA, LATAM, APAC)<br>
     - [ ] Tables to Update<br>
-        - [ ] Employees<br>
         - [ ] Orders<br>
         - [ ] Customers<br>
         - [x] Territories<br>
         - [x] Region<br>
         - [x] Suppliers<br>
+        - [x] Employees<br>
 - [x] Add new territories based on the cities of the `orders` table
 - [ ] Update `region` column in `customers` table to `state`
 - [ ] Add `region` column to `customers` table; use the new world regions
