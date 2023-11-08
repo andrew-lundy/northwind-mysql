@@ -249,19 +249,17 @@ CREATE TABLE employees_updated (
     PRIMARY KEY (employee_id)
 );
 
-INSERT INTO employees_updated (employee_id, last_name, first_name, title, title_of_courtesy, birth_date, hire_date, address, city, state, postal_code, country, region, home_phone, extension, photo, notes, reports_to, photo_path)
-SELECT employee_id, last_name, first_name, title, title_of_courtesy, birth_date, hire_date, address, city, state, postal_code, country, region, home_phone, extension, photo, notes, reports_to, photo_path
-FROM employees;
-
 SELECT * FROM employees_updated;
 
-DESCRIBE employees;
+DROP TABLE employees;
 
-ALTER TABLE employees
-CHANGE region state VARCHAR(15);
-DESCRIBE employees;
+ALTER TABLE orders
+DROP FOREIGN KEY orders_ibfk_2;
 
-SELECT orders.ship_city, orders.ship_region, orders.ship_country
-FROM orders;
+SELECT * FROM orders;
 
-SELECT * FROM suppliers;
+ALTER TABLE orders
+ADD CONSTRAINT orders_ibfk_2
+FOREIGN KEY (employee_id)
+REFERENCES employees_updated (employee_id);
+
