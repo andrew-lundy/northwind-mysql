@@ -224,31 +224,39 @@ WHERE orders.ship_region IS NOT NULL;
 -- Add region to both tables; fill in with world regions
 -- Add some orders with the APAC region
 SET SQL_SAFE_UPDATES = 0;
-SELECT * FROM employees;
-
-CREATE TABLE employees_updated (
-	employee_id SMALLINT,
-    last_name VARCHAR(20) NOT NULL,
-    first_name VARCHAR(20) NOT NULL,
-    title VARCHAR(30),
-    title_of_courtesy VARCHAR(25),
-    birth_date DATE,
-    hire_date DATE,
-    address VARCHAR(60),
-    city VARCHAR(15),
-    state VARCHAR(15),
-    postal_code VARCHAR(10),
-    country VARCHAR(15),
-    region SMALLINT,
-    home_phone VARCHAR(24),
-    extension VARCHAR(4),
-    photo BLOB,
-    notes TEXT,
-    reports_to SMALLINT,
-    photo_path VARCHAR(255),
-    PRIMARY KEY (employee_id)
-);
 
 SELECT * FROM customers
-ORDER BY region;
+ORDER BY state;
+
+RENAME TABLE customers TO customers_temp;
+RENAME TABLE customers_updated to customers;
+
+ALTER TABLE customers
+CHANGE region state VARCHAR(15);
+
+CREATE TABLE `customers_updated` (
+  `customer_id` char(5) NOT NULL,
+  `company_name` varchar(40) NOT NULL,
+  `contact_name` varchar(30) DEFAULT NULL,
+  `contact_title` varchar(30) DEFAULT NULL,
+  `address` varchar(60) DEFAULT NULL,
+  `city` varchar(15) DEFAULT NULL,
+  `state` varchar(15) DEFAULT NULL,
+  `region` varchar(15) DEFAULT NULL,
+  `postal_code` varchar(10) DEFAULT NULL,
+  `country` varchar(15) DEFAULT NULL,
+  `phone` varchar(24) DEFAULT NULL,
+  `fax` varchar(24) DEFAULT NULL,
+  PRIMARY KEY (`customer_id`)
+);
+
+INSERT INTO customers_updated (customer_id, company_name, contact_name, contact_title, address, city, state, postal_code, country, phone, fax)
+SELECT customer_id, company_name, contact_name, contact_title, address, city, state, postal_code, country, phone, fax
+FROM customers;
+
+SELECT * FROM customers_updated;
+
+DESCRIBE region;
+DESCRIBE customers;
+SHOW CREATE TABLE customers;
 
