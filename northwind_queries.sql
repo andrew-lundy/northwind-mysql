@@ -226,35 +226,11 @@ WHERE orders.ship_region IS NOT NULL;
 SET SQL_SAFE_UPDATES = 0;
 
 SELECT * FROM customers
-ORDER BY state;
+ORDER BY country;
 
-RENAME TABLE customers TO customers_temp;
-RENAME TABLE customers_updated to customers;
-
-ALTER TABLE customers
-CHANGE region state VARCHAR(15);
-
-CREATE TABLE `customers_updated` (
-  `customer_id` char(5) NOT NULL,
-  `company_name` varchar(40) NOT NULL,
-  `contact_name` varchar(30) DEFAULT NULL,
-  `contact_title` varchar(30) DEFAULT NULL,
-  `address` varchar(60) DEFAULT NULL,
-  `city` varchar(15) DEFAULT NULL,
-  `state` varchar(15) DEFAULT NULL,
-  `region` varchar(15) DEFAULT NULL,
-  `postal_code` varchar(10) DEFAULT NULL,
-  `country` varchar(15) DEFAULT NULL,
-  `phone` varchar(24) DEFAULT NULL,
-  `fax` varchar(24) DEFAULT NULL,
-  PRIMARY KEY (`customer_id`)
-);
-
-INSERT INTO customers_updated (customer_id, company_name, contact_name, contact_title, address, city, state, postal_code, country, phone, fax)
-SELECT customer_id, company_name, contact_name, contact_title, address, city, state, postal_code, country, phone, fax
-FROM customers;
-
-SELECT * FROM customers_updated;
+UPDATE customers
+SET region = 2
+WHERE country = 'Canada' OR country = 'USA';
 
 DESCRIBE region;
 DESCRIBE customers;
