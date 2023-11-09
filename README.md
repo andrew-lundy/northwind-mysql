@@ -10,14 +10,14 @@ The changes to the database itself can be found [here](https://github.com/andrew
 - [ ] Update the regions used in the database to use the four main regions of the world (EMEA, NA, LATAM, APAC)<br>
     - [ ] Tables to Update<br>
         - [ ] Orders<br>
-        - [ ] Customers<br>
+        - [x] Customers<br>
         - [x] Employees<br>
         - [x] Territories<br>
         - [x] Region<br>
         - [x] Suppliers<br>
 - [x] Add new territories based on the cities of the `orders` table
-- [ ] Update `region` column in `customers` table to `state`
-- [ ] Add `region` column to `customers` table; use the new world regions
+- [x] Update `region` column in `customers` table to `state`
+- [x] Add `region` column to `customers` table; use the new world regions
 - [ ] Update `ship_region` column in `orders` table to `state`
 - [ ] Add `ship_region` column to `orders` table; use the new world regions
 - [x] Update `region` column in `employees` table to `state`
