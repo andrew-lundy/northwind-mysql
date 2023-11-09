@@ -249,7 +249,6 @@ CREATE TABLE employees_updated (
     PRIMARY KEY (employee_id)
 );
 
-UPDATE employees
-SET region = 1
-WHERE employee_id = 5 OR employee_id = 6 OR employee_id = 7 OR employee_id = 9;
-SELECT * FROM employees;
+SELECT * FROM customers
+ORDER BY region;
+

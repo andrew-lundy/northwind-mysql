@@ -20,6 +20,6 @@ The changes to the database itself can be found [here](https://github.com/andrew
 - [ ] Add `region` column to `customers` table; use the new world regions
 - [ ] Update `ship_region` column in `orders` table to `state`
 - [ ] Add `ship_region` column to `orders` table; use the new world regions
-- [ ] Update `region` column in `employees` table to `state`
-- [ ] Add `region` column to `employees` table; use the new world regions
+- [x] Update `region` column in `employees` table to `state`
+- [x] Add `region` column to `employees` table; use the new world regions
 <br>
