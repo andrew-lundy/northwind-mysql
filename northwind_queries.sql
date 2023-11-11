@@ -224,10 +224,21 @@ WHERE orders.ship_region IS NOT NULL;
 -- Change employee_id to unsigned tinyint; see how much space is saved
 SET SQL_SAFE_UPDATES = 1;
 
-SELECT * FROM employees;
-DESCRIBE employees;
+SELECT * FROM orders
+ORDER BY order_id DESC;
 
-INSERT INTO orders
-VALUES (11077, 'SDYOH', 1);
+SELECT * FROM order_details
+WHERE order_id = 10248;
+
+DESCRIBE orders;
 
 SHOW CREATE TABLE orders;
+
+SELECT * FROM shippers;
+
+INSERT INTO orders
+VALUES (11078, 'SDYOH', 10, '1996-12-01', '1997-01-01', '1996-12-03', 3, 70.50, 'Sydney Opera House', 'Bennelong Point', 'Sydney', 'New South Wales', 4, '2000', 'Australia');
+
+SELECT * FROM customers;
+
+DESCRIBE customers;
