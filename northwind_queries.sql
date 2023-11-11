@@ -225,41 +225,15 @@ WHERE orders.ship_region IS NOT NULL;
 -- Add some orders with the APAC region
 SET SQL_SAFE_UPDATES = 0;
 
-ALTER TABLE orders RENAME COLUMN ship_region TO state;
+SHOW CREATE TABLE order_details;
 
-CREATE TABLE `orders_updated` (
-  `order_id` smallint NOT NULL,
-  `customer_id` char(5) DEFAULT NULL,
-  `employee_id` smallint DEFAULT NULL,
-  `order_date` date DEFAULT NULL,
-  `required_date` date DEFAULT NULL,
-  `shipped_date` date DEFAULT NULL,
-  `ship_via` smallint DEFAULT NULL,
-  `freight` decimal(10,2) DEFAULT NULL,
-  `ship_name` varchar(40) DEFAULT NULL,
-  `ship_address` varchar(60) DEFAULT NULL,
-  `ship_city` varchar(15) DEFAULT NULL,
-  `ship_state` varchar(15) DEFAULT NULL,
-  `ship_region` smallint DEFAULT NULL,
-  `ship_postal_code` varchar(10) DEFAULT NULL,
-  `ship_country` varchar(15) DEFAULT NULL,
-  PRIMARY KEY (`order_id`),
-  KEY `customer_id` (`customer_id`),
-  KEY `ship_via` (`ship_via`),
-  KEY `orders_ibfk_2` (`employee_id`),
-  CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`),
-  CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`employee_id`),
-  CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`ship_via`) REFERENCES `shippers` (`shipper_id`)
-);
+-- Remove constraint from order_details
+-- Add new constraint to order_details that references the new orders table
+ALTER TABLE order_details
+ADD CONSTRAINT order_details_ibfk_2
+FOREIGN KEY (order_id)
+REFERENCES orders (order_id);
 
+SELECT * FROM orders;
 
-INSERT INTO orders_updated
-SELECT order_id, customer_id, employee_id, order_date, required_date, shipped_date, ship_via, freight, ship_name, ship_address, ship_city, state, NULL, ship_postal_code, ship_country
-FROM orders;
-
-SELECT * FROM orders_updated;
-
-SELECT order_id
-FROM orders
-JOIN orders_updated ON orders
 

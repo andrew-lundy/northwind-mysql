@@ -18,7 +18,7 @@ The changes to the database itself can be found [here](https://github.com/andrew
 - [x] Add new territories based on the cities of the `orders` table
 - [x] Update `region` column in `customers` table to `state`
 - [x] Add `region` column to `customers` table; use the new world regions
-- [ ] Update `ship_region` column in `orders` table to `state`
+- [x] Update `ship_region` column in `orders` table to `state`
 - [ ] Add `ship_region` column to `orders` table; use the new world regions
 - [x] Update `region` column in `employees` table to `state`
 - [x] Add `region` column to `employees` table; use the new world regions
