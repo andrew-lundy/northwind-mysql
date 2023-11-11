@@ -223,17 +223,12 @@ WHERE orders.ship_region IS NOT NULL;
 -- Update ship_region in orders to state
 -- Add region to both tables; fill in with world regions
 -- Add some orders with the APAC region
-SET SQL_SAFE_UPDATES = 0;
+SET SQL_SAFE_UPDATES = 1;
 
-SHOW CREATE TABLE order_details;
+SELECT * FROM orders
+ORDER BY ship_country, ship_city;
 
--- Remove constraint from order_details
--- Add new constraint to order_details that references the new orders table
-ALTER TABLE order_details
-ADD CONSTRAINT order_details_ibfk_2
-FOREIGN KEY (order_id)
-REFERENCES orders (order_id);
-
-SELECT * FROM orders;
-
+UPDATE orders
+SET ship_region = 1
+WHERE ship_country = 'Norway';
 
