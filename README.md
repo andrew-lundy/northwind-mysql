@@ -5,7 +5,7 @@ I'm in the process of reworking the database to use world regions. I am adding t
 <br><br>
 **The purpose of this project** is to get hands-on with MySQL and work with an existing database. From making queries that add and update new data, to altering the structure of the database. To do this, I've laid out some milestones:
 - [x] Finish the queries from [geeksengine.com](https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php)
-- [ ] Update the regions used in the database to use the four main regions of the world (EMEA, NA, LATAM, APAC)<br>
+- [x] Update the regions used in the database to use the four main regions of the world (EMEA, NA, LATAM, APAC)<br>
     - [x] Tables to Update<br>
         - [x] Orders<br>
         - [x] Customers<br>

@@ -222,10 +222,16 @@ WHERE orders.ship_region IS NOT NULL;
 
 --
 -- Change employee_id to unsigned tinyint; see how much space is saved
-SET SQL_SAFE_UPDATES = 1;
+SET SQL_SAFE_UPDATES = 0;
 
 SELECT * FROM orders
-ORDER BY order_id DESC;
+ORDER BY ship_region, ship_country;
+
+SELECT * FROM employees;
+
+UPDATE orders
+SET ship_region = 2
+WHERE ship_country = 'Mexico';
 
 SELECT * FROM order_details
 WHERE order_id = 10248;
