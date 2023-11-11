@@ -227,13 +227,6 @@ SET SQL_SAFE_UPDATES = 1;
 SELECT * FROM employees;
 DESCRIBE employees;
 
-INSERT INTO employees (employee_id, last_name, first_name, title, title_of_courtesy, birth_date, hire_date, address, city, state, postal_code, country, region, home_phone, extension, photo, notes, reports_to, photo_path)
-VALUES (10, 'Foster', 'Connor', 'Sales Representative', 'Mr.', '1960-02-11', '1995-08-23', '18/281-287 Sussex St.', 'Sydney', NULL, 'NSW 2000', 'Australia', 4, '61 1800 671 823', '6942', NULL, 'Connor holds a dual BA in Business Management & Marketing', 5, NULL);
-
-UPDATE employees
-SET state = 'New South Wales'
-WHERE employee_id = 10;
-
 INSERT INTO orders
 VALUES (11077, 'SDYOH', 1);
 
