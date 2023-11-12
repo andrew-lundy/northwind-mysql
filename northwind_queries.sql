@@ -223,25 +223,16 @@ WHERE orders.ship_region IS NOT NULL;
 --
 -- Change employee_id to unsigned tinyint; see how much space is saved
 SET SQL_SAFE_UPDATES = 0;
-DESCRIBE customers;
 
-DESCRIBE suppliers;
+SELECT * FROM orders;
+SELECT * FROM shippers;
 SELECT * FROM suppliers;
-INSERT INTO suppliers
-VALUES (30, 'Hanover Honey', 'Andreas Müller', 'Owner', 'Humboldtstraße 3', 'Ronnenberg', 'EMEA', '30952', 'Germany', '49 511 8765 4321', '49 511 8765 4322', 'https://hanoverhoney.de/');
-
 SELECT * FROM order_details
-WHERE order_id = 11079;
-
+ORDER BY order_id DESC;
 DESCRIBE order_details;
+
 INSERT INTO order_details
-VALUES (11079, 78, 9.00, 15, 0.00);
+VALUES (11079, 78, 9.00, 15, 0);
 
-INSERT INTO products
-VALUES (78, 'Original Honey', 30, 2, '12 - 12 oz jars', 9.00, 100, 15, 0, 0);
-
-INSERT INTO customers
-VALUES ('CPPGC', 'Chamberlain Park Public Golf Course', 'Noah Bennett', 'Order Administrator', '46A Linwood Avenue', 'Auckland', NULL, 4, '1025', 'New Zealand', '64 9 815 4999', '64 9 815 5000');
-
-INSERT INTO orders
-VALUES (11080, 'CPPGC', 10, '1997-06-06', '1997-07-06', '1997-06-09', 3, 35.33, 'The Windsor Hotel', '112 Mill Point Rd.', 'Perth', 'Western Australia', 4, '6151', 'Australia');
+SELECT * FROM products
+WHERE product_id = 78;

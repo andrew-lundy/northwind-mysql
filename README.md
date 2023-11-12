@@ -20,6 +20,6 @@ I'm in the process of reworking the database to use world regions. I am adding t
 - [x] Add `ship_region` column to `orders` table; use the new world regions
 - [x] Update `region` column in `employees` table to `state`
 - [x] Add `region` column to `employees` table; use the new world regions
-- [ ] Add some orders from APAC
+- [x] Add some orders from APAC
 - [ ] Make some queries with the new data; top products per region, top salesperson per region, etc.
 <br>
