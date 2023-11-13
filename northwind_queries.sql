@@ -224,15 +224,4 @@ WHERE orders.ship_region IS NOT NULL;
 -- Change employee_id to unsigned tinyint; see how much space is saved
 SET SQL_SAFE_UPDATES = 0;
 
-SELECT * FROM orders;
-SELECT * FROM shippers;
-SELECT * FROM suppliers;
-SELECT * FROM order_details
-ORDER BY order_id DESC;
-DESCRIBE order_details;
-
-INSERT INTO order_details
-VALUES (11079, 78, 9.00, 15, 0);
-
-SELECT * FROM products
-WHERE product_id = 78;
+-- Find top product in each region
