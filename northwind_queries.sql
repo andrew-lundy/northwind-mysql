@@ -219,9 +219,55 @@ JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 WHERE orders.ship_region IS NOT NULL;
 
+-- Find the top product for a single region; 'top product' meaning highest quantity sold.
+SELECT products.product_id, products.product_name, order_details.quantity, orders.ship_region
+FROM order_details
+JOIN orders ON order_details.order_id = orders.order_id
+JOIN products ON order_details.product_id = products.product_id
+WHERE ship_region = 4
+ORDER BY quantity DESC
+LIMIT 1;
 
---
+SELECT * FROM orders;
+
+-- Find the top product for all regions; 'top product' meaning highest quantity sold.
+SELECT region.region_id, products.product_name, products.product_id, order_details.quantity
+FROM region
+JOIN orders ON region.region_id = orders.ship_region
+JOIN order_details ON orders.order_id = order_details.order_id
+JOIN products ON order_details.product_id = products.product_id;
+
+SELECT products.product_id, SUM(order_details.quantity) AS sales_count, orders.ship_region
+FROM products 
+JOIN order_details ON products.product_id = order_details.product_id
+JOIN orders ON order_details.order_id = orders.order_id
+GROUP BY products.product_id, orders.ship_region
+ORDER BY ship_region, sales_count DESC;
+
+WITH ProductSales AS (
+	SELECT
+		products.product_id,
+        order_details.quantity AS sales_count,
+        orders.ship_region,
+        ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
+	FROM products
+    JOIN order_details ON products.product_id = order_details.product_id
+    JOIN orders ON order_details.order_id = orders.order_id
+
+)
+
+SELECT product_id, sales_count, ship_region
+FROM ProductSales
+WHERE row_num = 1;
+
+SELECT
+    products.product_id,
+	order_details.quantity AS sales_count,
+	orders.ship_region,
+	ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
+FROM products
+JOIN order_details ON products.product_id = order_details.product_id
+JOIN orders ON order_details.order_id = orders.order_id;
+
+
 -- Change employee_id to unsigned tinyint; see how much space is saved
-SET SQL_SAFE_UPDATES = 0;
-
--- Find top product in each region
