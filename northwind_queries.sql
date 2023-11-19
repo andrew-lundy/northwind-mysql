@@ -230,7 +230,7 @@ LIMIT 1;
 
 SELECT * FROM orders;
 
--- Find the top product for all regions; 'top product' meaning highest quantity sold.
+-- Find the top product for each region; 'top product' meaning highest quantity sold.
 SELECT product_id, sales_count, ship_region
 FROM (
 	SELECT
@@ -243,6 +243,9 @@ FROM (
 	JOIN orders ON order_details.order_id = orders.order_id
 ) AS ProductSales
 WHERE row_num = 1;
+
+-- Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount
+
 
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
