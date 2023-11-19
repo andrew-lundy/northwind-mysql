@@ -23,4 +23,4 @@ In the process of learning MySQL, I am reworking the Northwind database to use w
 - [ ] Make some queries with the new data; top products per region, top salesperson per region, etc.
 <br><br>
 ## Installation
-The project does not contain any installation steps. To create the tables and add the data, use the [northwind_creation_and_insertion.sql file](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_creation_and_insert.sql).
+The project does not contain any installation steps. To create the tables and add the data, use the [northwind_creation_and_insertion.sql](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_creation_and_insert.sql) file.
