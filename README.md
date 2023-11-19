@@ -24,3 +24,7 @@ In the process of learning MySQL, I am reworking the Northwind database to use w
 <br><br>
 ## Installation
 The project does not contain any installation steps. To create the tables and add the data, use the [northwind_creation_and_insertion.sql](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_creation_and_insert.sql) file.
+
+There is currently no model in the repo due to a bug with MySQL Workbench on macOS Sonoma. See issues:
+- [https://discussions.apple.com/thread/255164269](https://discussions.apple.com/thread/255164269)
+- [https://forums.mysql.com/read.php?152,710054,710058](https://forums.mysql.com/read.php?152,710054,710058)
