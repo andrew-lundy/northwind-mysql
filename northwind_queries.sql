@@ -245,5 +245,4 @@ FROM (
 WHERE row_num = 1;
 
 
-
 -- Change employee_id to unsigned tinyint; see how much space is saved
