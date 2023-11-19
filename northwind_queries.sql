@@ -242,7 +242,7 @@ FROM products
 JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_id, orders.ship_region
-ORDER BY ship_region, sales_count DESC;
+ORDER BY product_id, ship_region, sales_count DESC;
 
 WITH ProductSales AS (
 	SELECT
@@ -253,21 +253,24 @@ WITH ProductSales AS (
 	FROM products
     JOIN order_details ON products.product_id = order_details.product_id
     JOIN orders ON order_details.order_id = orders.order_id
-
 )
-
 SELECT product_id, sales_count, ship_region
 FROM ProductSales
 WHERE row_num = 1;
 
-SELECT
-    products.product_id,
-	order_details.quantity AS sales_count,
-	orders.ship_region,
-	ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
-FROM products
-JOIN order_details ON products.product_id = order_details.product_id
-JOIN orders ON order_details.order_id = orders.order_id;
+SELECT product_id, sales_count, ship_region
+FROM (
+	SELECT
+		products.product_id,
+		order_details.quantity AS sales_count,
+		orders.ship_region,
+		ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
+	FROM products
+	JOIN order_details ON products.product_id = order_details.product_id
+	JOIN orders ON order_details.order_id = orders.order_id
+) AS ProductSales
+WHERE row_num = 1;
+
 
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
