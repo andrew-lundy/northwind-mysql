@@ -244,8 +244,7 @@ FROM (
 ) AS ProductSales
 WHERE row_num = 1;
 
--- Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount
--- First, get all sales grouped by employee
+-- Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount.
 SELECT first_name, last_name, FormattedSubtotal
 FROM (
 	SELECT 
