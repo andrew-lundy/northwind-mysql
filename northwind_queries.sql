@@ -246,37 +246,21 @@ WHERE row_num = 1;
 
 -- Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount
 -- First, get all sales grouped by employee
-WITH SubtotalCTE AS (
-	SELECT 
-		employees.employee_id,
-        employees.first_name,
-        employees.last_name,
-		orders.ship_region,
-		FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
-	FROM employees
-	JOIN orders on employees.employee_id = orders.employee_id
-	JOIN order_details ON orders.order_id = order_details.order_id
-	GROUP BY employee_id, ship_region
-    ORDER BY Subtotal
-)
-SELECT employee_id, first_name, last_name, ship_region, Subtotal, ROW_NUMBER() OVER(PARTITION BY ship_region ORDER BY Subtotal) AS row_num
-FROM SubtotalCTE;
-
-
-
-SELECT employees.employee_id, orders.order_id, orders.ship_region, Subtotal
+SELECT first_name, last_name, FormattedSubtotal
 FROM (
 	SELECT 
-		employees.employee_id, 
+		employees.employee_id,
+		employees.first_name,
+		employees.last_name,
 		orders.ship_region,
-		FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal,
-		ROW_NUMBER() OVER(PARTITION BY orders.ship_region) AS row_num
+        SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as Subtotal,
+        FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as FormattedSubtotal,
+		ROW_NUMBER() OVER(PARTITION BY ship_region ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) as row_num
 	FROM employees
 	JOIN orders on employees.employee_id = orders.employee_id
 	JOIN order_details ON orders.order_id = order_details.order_id
 	GROUP BY employee_id, ship_region
-	ORDER BY employee_id, ship_region
-) AS TopSalesperson;
-
+) AS TopSalesperson
+WHERE row_num = 1;
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
