@@ -245,7 +245,7 @@ FROM (
 WHERE row_num = 1;
 
 -- Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount.
-SELECT first_name, last_name, FormattedSubtotal
+SELECT CONCAT(first_name, ' ', last_name) AS Salesperson, FormattedSubtotal, ship_region AS Region
 FROM (
 	SELECT 
 		employees.employee_id,
@@ -261,5 +261,10 @@ FROM (
 	GROUP BY employee_id, ship_region
 ) AS TopSalesperson
 WHERE row_num = 1;
+
+
+-- Find all products and their quantity sold; group by quarter of `orders.order_date` (Are there specific products that consistently outperform others?)
+SELECT products.product
+
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
