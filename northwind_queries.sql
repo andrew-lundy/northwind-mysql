@@ -276,38 +276,6 @@ JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name, order_year;
 
 -- Get all of the products and their subtotals. Then, find the average of those subtotals. Then find the products that have a higher subtotal than the average; indicating they perform better than other products
-SELECT *
-FROM products
-JOIN order_details ON products.product_id = order_details.product_id
-WHERE order_details.unit_price * order_details.quantity * (1 - discount) > (
-	SELECT AVG(subtotal) AS average_subtotal
-	FROM (
-		SELECT product_name, formatted_subtotal, subtotal
-		FROM (
-			SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
-			FROM products
-			JOIN order_details ON products.product_id = order_details.product_id
-			GROUP BY products.product_name
-			ORDER BY subtotal DESC
-		) AS product_subtotal
-	) AS product_subtotal_averages
-);
-
-SELECT * FROM order_details
-WHERE order_details.unit_price * order_details.quantity * (1 - discount) > (
-	SELECT AVG(subtotal) AS average_subtotal
-	FROM (
-		SELECT product_name, formatted_subtotal, subtotal
-		FROM (
-			SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
-			FROM products
-			JOIN order_details ON products.product_id = order_details.product_id
-			GROUP BY products.product_name
-			ORDER BY subtotal DESC
-		) AS product_subtotal
-	) AS product_subtotal_averages
-);
-
 SELECT * FROM (
 	SELECT order_details.product_id, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal 
 	FROM order_details
@@ -328,40 +296,6 @@ WHERE subtotal > (
 )
 ORDER BY subtotal DESC;
 
-SELECT order_details.product_id, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal 
-FROM order_details
-GROUP BY product_id;
-
-
-SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
-FROM products
-JOIN order_details ON products.product_id = order_details.product_id
-GROUP BY products.product_name
-ORDER BY subtotal DESC;
-
-
--- Find averages of all subtotals
-SELECT AVG(subtotal) AS average_subtotal
-FROM (
-	SELECT product_name, formatted_subtotal, subtotal
-	FROM (
-		SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
-		FROM products
-		JOIN order_details ON products.product_id = order_details.product_id
-		GROUP BY products.product_name
-		ORDER BY subtotal DESC
-	) AS product_subtotal
-) AS product_subtotal_averages;
-
--- Find product names and subtotal
-SELECT product_name, formatted_subtotal
-FROM (
-	SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
-    FROM products
-    JOIN order_details ON products.product_id = order_details.product_id
-    GROUP BY products.product_name
-    ORDER BY subtotal DESC
-) AS product_subtotal;
 
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
