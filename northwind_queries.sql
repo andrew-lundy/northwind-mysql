@@ -275,11 +275,12 @@ JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name, order_year;
 
--- Get all of the products and their subtotals. Then, find the average of those subtotals. Then find the products that have a higher subtotal than the average; indicating they perform better than other products
-SELECT * FROM (
-	SELECT order_details.product_id, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal 
+-- Get all of the products and their subtotals. Then, find the average of those subtotals. Then, find the products that have a higher subtotal than the average; indicating they perform better than other products.
+SELECT product_id, product_name, formatted_subtotal FROM (
+	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
 	FROM order_details
-    GROUP BY product_id
+	JOIN products ON order_details.product_id = products.product_id
+	GROUP BY product_id
 ) AS product_subtotals
 WHERE subtotal > (
 	SELECT AVG(subtotal) AS average_subtotal
@@ -295,7 +296,6 @@ WHERE subtotal > (
 	) AS product_subtotal_averages
 )
 ORDER BY subtotal DESC;
-
 
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
