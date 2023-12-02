@@ -210,7 +210,7 @@ GROUP BY categories.category_name,
     END;
     
     
--- Start of custom queries; focused on product performance
+-- HERE: Start of custom queries; focused on product performance
 -- Top categories per region
 SELECT products.product_name, categories.category_name, orders.ship_region
 FROM products
@@ -227,8 +227,6 @@ JOIN products ON order_details.product_id = products.product_id
 WHERE ship_region = 4
 ORDER BY quantity DESC
 LIMIT 1;
-
-SELECT * FROM orders;
 
 -- Find the top product for each region; 'top product' meaning highest quantity sold.
 SELECT product_id, sales_count, ship_region
@@ -262,8 +260,7 @@ FROM (
 ) AS TopSalesperson
 WHERE row_num = 1;
 
--- MAIN: Query currently being worked on.
--- (How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?)
+-- View all products and their sales per quarter of each year.
 SELECT products.product_name,
     FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'Qtr 1',
 	FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'Qtr 2',
@@ -275,7 +272,11 @@ JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name, order_year;
 
--- Get all of the products and their subtotals. Then, find the average of those subtotals. Then, find the products that have a higher subtotal than the average; indicating they perform better than other products.
+-- HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
+
+-- Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
+-- To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
+-- This would indicate a product that performs better than average.
 SELECT product_id, product_name, formatted_subtotal FROM (
 	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
 	FROM order_details
@@ -285,17 +286,26 @@ SELECT product_id, product_name, formatted_subtotal FROM (
 WHERE subtotal > (
 	SELECT AVG(subtotal) AS average_subtotal
 	FROM (
-		SELECT product_name, formatted_subtotal, subtotal
-		FROM (
-			SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
-			FROM products
-			JOIN order_details ON products.product_id = order_details.product_id
-			GROUP BY products.product_name
-			ORDER BY subtotal DESC
-		) AS product_subtotal
+		SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
+		FROM products
+		JOIN order_details ON products.product_id = order_details.product_id
+		GROUP BY products.product_name
+		ORDER BY subtotal DESC
 	) AS product_subtotal_averages
 )
 ORDER BY subtotal DESC;
+
+-- Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
+-- Find all sales for products
+-- Find inventory for products
+SELECT order_details.product_id, products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, products.units_in_stock
+FROM order_details
+JOIN products ON order_details.product_id = products.product_id
+GROUP BY order_details.product_id
+ORDER BY subtotal ASC;
+
+
+
 
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
