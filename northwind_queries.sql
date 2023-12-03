@@ -316,7 +316,7 @@ BEGIN
 END //
 DELIMITER ;
 
-
+-- Query that finds products, their current "in stock" total, and subtotal of sales.
 SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal
 FROM order_details
 JOIN products ON order_details.product_id = products.product_id
@@ -328,11 +328,5 @@ GROUP BY order_details.product_id, products.product_name, products.units_in_stoc
 HAVING subtotal < @average  
 ORDER BY subtotal ASC;
 
-SELECT * FROM products
-WHERE units_in_stock > 50;
-
-SELECT SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal
-FROM order_details
-GROUP BY order_details.product_id;
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
