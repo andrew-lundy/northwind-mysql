@@ -298,23 +298,14 @@ ORDER BY subtotal DESC;
 -- Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
 -- Find all sales for products
 -- Find inventory for products
--- If 'in stock' is more than 50, 
-SELECT order_details.product_id, products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, products.units_in_stock
-FROM order_details
-JOIN products ON order_details.product_id = products.product_id
-GROUP BY order_details.product_id
-ORDER BY subtotal ASC;
-
-SELECT AVG(products.units_in_stock)
-FROM products;
-
-SELECT * FROM products
-WHERE units_in_stock > 50;
+-- First, define 'low sales' and 'high inventory'. 'High inventory' = Greater than the average of all products and their "in stock" levels combined. 'Low sales' = less than average.
+CALL FindAverageSubtotal(@average);
+SELECT @average;
 
 DELIMITER //
-CREATE PROCEDURE FindAverageSubtotal()
+CREATE PROCEDURE FindAverageSubtotal(OUT average DECIMAL(10,2))
 BEGIN
-	SELECT AVG(subtotal) AS average_subtotal
+	SELECT AVG(subtotal) INTO average
 	FROM (
 		SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
 		FROM products
@@ -322,9 +313,20 @@ BEGIN
 		GROUP BY products.product_name
 		ORDER BY subtotal DESC
 	) AS product_subtotal_averages;
-END//
+END //
 DELIMITER ;
 
-CALL FindAverageSubtotal();
+-- Query that finds products, their current "in stock" total, and subtotal of sales.
+SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal
+FROM order_details
+JOIN products ON order_details.product_id = products.product_id
+WHERE products.units_in_stock > (
+	SELECT AVG(products.units_in_stock)
+    FROM products
+)
+GROUP BY order_details.product_id, products.product_name, products.units_in_stock
+HAVING subtotal < @average  
+ORDER BY subtotal ASC;
+
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
