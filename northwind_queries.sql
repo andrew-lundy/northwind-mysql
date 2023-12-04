@@ -283,22 +283,11 @@ SELECT product_id, product_name, formatted_subtotal FROM (
 	JOIN products ON order_details.product_id = products.product_id
 	GROUP BY product_id
 ) AS product_subtotals
-WHERE subtotal > (
-	SELECT AVG(subtotal) AS average_subtotal
-	FROM (
-		SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
-		FROM products
-		JOIN order_details ON products.product_id = order_details.product_id
-		GROUP BY products.product_name
-		ORDER BY subtotal DESC
-	) AS product_subtotal_averages
-)
+WHERE subtotal > @average
 ORDER BY subtotal DESC;
 
 -- Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
--- Find all sales for products
--- Find inventory for products
--- First, define 'low sales' and 'high inventory'. 'High inventory' = Greater than the average of all products and their "in stock" levels combined. 'Low sales' = less than average.
+-- First, define 'low sales' and 'high inventory'. 'High inventory' = `units_in_stock` is greater than the average of all `units_in_stock` count combined. 'Low sales' = less than average, based on the subtotal.
 CALL FindAverageSubtotal(@average);
 SELECT @average;
 
@@ -317,16 +306,19 @@ END //
 DELIMITER ;
 
 -- Query that finds products, their current "in stock" total, and subtotal of sales.
-SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal
-FROM order_details
-JOIN products ON order_details.product_id = products.product_id
-WHERE products.units_in_stock > (
-	SELECT AVG(products.units_in_stock)
-    FROM products
-)
-GROUP BY order_details.product_id, products.product_name, products.units_in_stock
-HAVING subtotal < @average  
-ORDER BY subtotal ASC;
+SELECT product_id, product_name, units_in_stock, formatted_subtotal
+FROM (
+	SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
+	FROM order_details
+	JOIN products ON order_details.product_id = products.product_id
+	WHERE products.units_in_stock > (
+		SELECT AVG(products.units_in_stock)
+		FROM products
+	)
+	GROUP BY order_details.product_id, products.product_name, products.units_in_stock
+	HAVING subtotal < @average  
+	ORDER BY subtotal ASC
+) AS LowSalesHighInventoryProducts;
 
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
