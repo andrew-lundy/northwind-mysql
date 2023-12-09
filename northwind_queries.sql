@@ -335,22 +335,15 @@ FROM (
 ) AS category_totals_table;
 
 -- Find categories and their total sales (add "total amount of products for each category")
-SELECT categories.category_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
+SELECT categories.category_name, 
+	FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal, 
+    COUNT(DISTINCT products.product_id) AS products_per_cat
 FROM categories
-JOIN products ON categories.category_id = products.product_id
+JOIN products ON categories.category_id = products.category_id
 JOIN order_details ON products.product_id = order_details.product_id
-GROUP BY categories.category_name
+GROUP BY categories.category_id
 ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC;
 
-
-SELECT products.product_name, categories.category_name
-FROM products
-JOIN categories ON products.category_id = categories.category_id
-GROUP BY products.product_name, categories.category_name;
-
-SELECT products.category_id, COUNT(category_id) AS products_per_category
-FROM products
-GROUP BY products.category_id;
 
 SELECT * FROM products
 ORDER BY category_id;
