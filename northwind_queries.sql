@@ -321,31 +321,15 @@ FROM (
 ) AS LowSalesHighInventoryProducts;
 
 -- Product Category Performance: Are there particular product categories that perform better than others? Can we analyze sales, profitability, and customer preferences within different categories?
--- Customer preference is based on the amount of orders that have the same product.
-
-SELECT AVG(subtotal)
-FROM (
-	-- Find categories and their total sales
-	SELECT categories.category_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal
-	FROM categories
-	JOIN products ON categories.category_id = products.product_id
-	JOIN order_details ON products.product_id = order_details.product_id
-	GROUP BY categories.category_name
-	ORDER BY subtotal
-) AS category_totals_table;
-
 -- Find categories and their total sales (add "total amount of products for each category")
 SELECT categories.category_name, 
-	FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal, 
+	FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal,
+    COUNT(order_details.quantity) AS orders_with_cat,
     COUNT(DISTINCT products.product_id) AS products_per_cat
 FROM categories
 JOIN products ON categories.category_id = products.category_id
 JOIN order_details ON products.product_id = order_details.product_id
 GROUP BY categories.category_id
 ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC;
-
-
-SELECT * FROM products
-ORDER BY category_id;
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
