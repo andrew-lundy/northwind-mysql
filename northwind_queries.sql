@@ -123,8 +123,6 @@ JOIN categories ON products.category_id = categories.category_id
 WHERE YEAR(orders.order_date) = 1997
 GROUP BY categories.category_name;
 
-
-
 -- Quarterly Orders by Product
 SELECT products.product_name, customers.company_name, YEAR(orders.order_date),
 	FORMAT(SUM(CASE QUARTER(orders.order_date) 
@@ -210,7 +208,7 @@ GROUP BY categories.category_name,
     END;
     
     
--- HERE: Start of custom queries; focused on product performance
+-- HERE: Start of custom queries; focused on product performance.
 -- Top categories per region
 SELECT products.product_name, categories.category_name, orders.ship_region
 FROM products
@@ -229,10 +227,11 @@ ORDER BY quantity DESC
 LIMIT 1;
 
 -- Find the top product for each region; 'top product' meaning highest quantity sold.
-SELECT product_id, sales_count, ship_region
+SELECT product_id, product_name, sales_count, ship_region
 FROM (
 	SELECT
 		products.product_id,
+        products.product_name,
 		order_details.quantity AS sales_count,
 		orders.ship_region,
 		ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
@@ -274,7 +273,7 @@ GROUP BY products.product_name, order_year;
 
 -- HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
 
--- Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
+-- 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
 -- To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
 -- This would indicate a product that performs better than average.
 SELECT product_id, product_name, formatted_subtotal FROM (
@@ -286,7 +285,7 @@ SELECT product_id, product_name, formatted_subtotal FROM (
 WHERE subtotal > @average
 ORDER BY subtotal DESC;
 
--- Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
+-- 2. Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
 -- First, define 'low sales' and 'high inventory'. 'High inventory' = `units_in_stock` is greater than the average of all `units_in_stock` count combined. 'Low sales' = less than average, based on the subtotal.
 CALL FindAverageSubtotal(@average);
 SELECT @average;
@@ -320,7 +319,7 @@ FROM (
 	ORDER BY subtotal ASC
 ) AS LowSalesHighInventoryProducts;
 
--- Product Category Performance: Are there particular product categories that perform better than others? Can we analyze sales, profitability, and customer preferences within different categories?
+-- 3. Product Category Performance: Are there particular product categories that perform better than others? Can we analyze sales, profitability, and customer preferences within different categories?
 -- Find categories and their total sales (add "total amount of products for each category")
 SELECT categories.category_name, 
 	FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal,
@@ -333,3 +332,34 @@ GROUP BY categories.category_id
 ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC;
 
 -- Change employee_id to unsigned tinyint; see how much space is saved
+
+
+-- Top 3 products per quarter (by sales)
+SELECT products.product_name,
+	SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_1,
+    SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_2,
+	SUM(CASE WHEN QUARTER(orders.order_date) = 3 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_3,
+    SUM(CASE WHEN QUARTER(orders.order_date) = 4 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_4
+FROM products
+JOIN order_details ON products.product_id = order_details.product_id
+JOIN orders ON order_details.order_id = orders.order_id
+GROUP BY products.product_name
+HAVING qtr_1 > 2000 AND qtr_2 > 2000 AND qtr_3 > 2000 AND qtr_4 > 2000
+ORDER BY (qtr_1 + qtr_2 + qtr_3 + qtr_4) DESC;
+
+
+WITH RankedProducts AS (
+	SELECT products.product_id, products.product_name, QUARTER(orders.order_date) AS quarter,
+		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal,
+		RANK() OVER(PARTITION BY QUARTER(orders.order_date) ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) AS product_rank
+    FROM order_details
+    JOIN products ON order_details.product_id = products.product_id
+    JOIN orders ON order_details.order_id = orders.order_id
+	GROUP BY products.product_id, QUARTER(orders.order_date)
+)
+
+SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal
+FROM RankedProducts
+WHERE product_rank <= 3;
+
+
