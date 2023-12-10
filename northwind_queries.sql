@@ -351,7 +351,7 @@ ORDER BY (qtr_1 + qtr_2 + qtr_3 + qtr_4) DESC;
 WITH RankedProducts AS (
 	SELECT products.product_id, products.product_name, QUARTER(orders.order_date) AS quarter,
 		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal,
-		ROW_NUMBER() OVER(PARTITION BY QUARTER(orders.order_date) ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) AS product_rank
+		RANK() OVER(PARTITION BY QUARTER(orders.order_date) ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) AS product_rank
     FROM order_details
     JOIN products ON order_details.product_id = products.product_id
     JOIN orders ON order_details.order_id = orders.order_id
