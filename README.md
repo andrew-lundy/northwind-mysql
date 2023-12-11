@@ -2,7 +2,7 @@
 ## Overview
 In the process of learning MySQL, I have reworked the Northwind database to use world regions. I have also written a collection of sample queries based on prompts from [geeksengine.com](https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php), alongside a number of custom prompts.
 <br><br> 
-I am adding the world regions because the `suppliers` table containes a `region` column that uses the 4 main regions. The rest of the database does not use these same values whenever a "region" is mentioned. The `ship_region` from the `orders` table, `region` from the `employees` table, `region` from the `customers` table - they all reference states or provinces.
+I have added the world regions because the `suppliers` table containes a `region` column that uses the 4 main regions. The rest of the database does not use these same values whenever a "region" is mentioned. The `ship_region` from the `orders` table, `region` from the `employees` table, `region` from the `customers` table - they all reference states or provinces.
 <br><br>
 **The purpose of this project** is to get hands-on with MySQL and work with an existing database. From making queries that add and update new data, to altering the structure of the database. To do this, I've laid out some milestones:
 - [x] Finish the queries from [geeksengine.com](https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php)
