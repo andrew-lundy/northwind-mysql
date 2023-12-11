@@ -331,10 +331,22 @@ JOIN order_details ON products.product_id = order_details.product_id
 GROUP BY categories.category_id
 ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC;
 
--- Change employee_id to unsigned tinyint; see how much space is saved
-
-
+-- Seasonal Trends: Do certain products exhibit seasonal sales patterns?
 -- Top 3 products per quarter (by sales)
+WITH RankedProducts AS (
+	SELECT products.product_id, products.product_name, QUARTER(orders.order_date) AS quarter,
+		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal,
+		RANK() OVER(PARTITION BY QUARTER(orders.order_date) ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) AS product_rank
+    FROM order_details
+    JOIN products ON order_details.product_id = products.product_id
+    JOIN orders ON order_details.order_id = orders.order_id
+	GROUP BY products.product_id, QUARTER(orders.order_date)
+)
+SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal
+FROM RankedProducts
+WHERE product_rank <= 3;
+
+-- List the products and their sales per quarter.
 SELECT products.product_name,
 	SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_1,
     SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_2,
@@ -346,20 +358,3 @@ JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name
 HAVING qtr_1 > 2000 AND qtr_2 > 2000 AND qtr_3 > 2000 AND qtr_4 > 2000
 ORDER BY (qtr_1 + qtr_2 + qtr_3 + qtr_4) DESC;
-
-
-WITH RankedProducts AS (
-	SELECT products.product_id, products.product_name, QUARTER(orders.order_date) AS quarter,
-		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal,
-		RANK() OVER(PARTITION BY QUARTER(orders.order_date) ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) AS product_rank
-    FROM order_details
-    JOIN products ON order_details.product_id = products.product_id
-    JOIN orders ON order_details.order_id = orders.order_id
-	GROUP BY products.product_id, QUARTER(orders.order_date)
-)
-
-SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal
-FROM RankedProducts
-WHERE product_rank <= 3;
-
-
