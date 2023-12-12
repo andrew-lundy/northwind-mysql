@@ -358,3 +358,26 @@ JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name
 HAVING qtr_1 > 2000 AND qtr_2 > 2000 AND qtr_3 > 2000 AND qtr_4 > 2000
 ORDER BY (qtr_1 + qtr_2 + qtr_3 + qtr_4) DESC;
+
+-- Find the top 3 suppliers based on the number of products they sell.
+WITH RankedSuppliers AS (
+	SELECT suppliers.supplier_id, 
+		suppliers.company_name,
+		COUNT(suppliers.supplier_id) AS product_count,
+		RANK() OVER(ORDER BY COUNT(*) DESC) as supplier_rank
+	FROM products
+    JOIN suppliers ON products.supplier_id = suppliers.supplier_id
+	GROUP BY supplier_id
+)
+SELECT supplier_id, company_name, product_count, supplier_rank
+FROM RankedSuppliers
+WHERE supplier_rank <= 3;
+
+
+-- Find the top shipper.
+SELECT ship_via AS shipper_id, shippers.company_name, COUNT(ship_via) AS shipment_count
+FROM orders
+JOIN shippers ON orders.ship_via = shippers.shipper_id
+GROUP BY ship_via
+ORDER BY shipment_count DESC
+LIMIT 1;
