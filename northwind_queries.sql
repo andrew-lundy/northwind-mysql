@@ -1,6 +1,6 @@
 -- Start of "Part 1" (https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php)
 -- For each order, calculate a subtotal. 
-SELECT orders.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal, COUNT(products.product_id) as "Products"
+SELECT orders.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal, COUNT(products.product_id) AS products
 FROM orders 
 JOIN order_details ON orders.order_id = order_details.order_id
 JOIN products ON order_details.product_id = products.product_id
@@ -8,13 +8,13 @@ GROUP BY orders.order_id
 ORDER BY orders.order_id;
 
 -- Find the total amount of orders for each year.
-SELECT YEAR(orders.order_date) AS Year, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+SELECT YEAR(orders.order_date) AS Year, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM orders
 JOIN order_details ON orders.order_id = order_details.order_id
 GROUP BY Year;
 
 -- Find all sales; describe each sale (order id, shipped date, subtotal, year) and order by the most recent orders.
-SELECT orders.order_id AS OrderID, orders.shipped_date AS ShippedDate, b.Subtotal, YEAR(orders.shipped_date) as Year
+SELECT orders.order_id AS OrderID, orders.shipped_date AS shipped_date, b.Subtotal, YEAR(orders.shipped_date) as year
 FROM orders
 JOIN (
 	SELECT order_details.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
@@ -25,7 +25,7 @@ ON orders.order_id = b.order_id
 ORDER BY Year DESC;
 
 -- For each employee, get their total sales amount per country.
-SELECT orders.ship_country, employees.first_name, employees.last_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+SELECT orders.ship_country, employees.first_name, employees.last_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM order_details
 JOIN orders ON order_details.order_id = orders.order_id
 JOIN employees ON orders.employee_id = employees.employee_id
@@ -33,11 +33,11 @@ GROUP BY orders.employee_id, orders.ship_country
 ORDER BY orders.employee_id;
 
 -- For each employee, get their sales details broken down by country.
-SELECT orders.ship_country, orders.order_id, employees.first_name, employees.last_name, b.Subtotal
+SELECT orders.ship_country, orders.order_id, employees.first_name, employees.last_name, b.subtotal
 FROM orders
 JOIN employees ON orders.employee_id = employees.employee_id
 JOIN (
-	SELECT order_details.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+	SELECT order_details.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 	FROM order_details
 	GROUP BY order_details.order_id
 ) as b
@@ -57,13 +57,13 @@ WHERE products.discontinued = 0;
 
 -- Start of "Part 2" (https://www.geeksengine.com/database/problem-solving/northwind-queries-part-2.php)
 -- Order details extended; this query calculates sales price for each order after discount is applied.
-SELECT order_details.order_id as OrderID, order_details.product_id as ProductID, products.product_name as ProductName, order_details.unit_price as UnitPrice, order_details.quantity as Quantity, order_details.discount as OrderDiscount, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+SELECT order_details.order_id as order_id, order_details.product_id as product_id, products.product_name as product_name, order_details.unit_price as unit_price, order_details.quantity as quantity, order_details.discount as order_discount, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM order_details
 JOIN products ON order_details.product_id = products.product_id
 GROUP BY OrderID, ProductID, UnitPrice, Quantity, OrderDiscount;
 
 -- Sales by category; for each category, we get the list of products sold and the total sales amount.
-SELECT categories.category_name, products.product_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+SELECT categories.category_name, products.product_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM categories
 JOIN products USING (category_id)
 JOIN order_details USING (product_id)
@@ -89,7 +89,7 @@ WHERE products.discontinued = 0
 ORDER BY categories.category_name, products.product_name;
 
 -- Customers and suppliers by city
-SELECT customers.city, customers.company_name, customers.contact_name, 'Customers' AS Relationship
+SELECT customers.city, customers.company_name, customers.contact_name, 'Customers' AS relationship
 FROM customers
 UNION
 SELECT suppliers.city, suppliers.company_name, suppliers.contact_name, 'Suppliers'
@@ -106,7 +106,7 @@ WHERE products.unit_price > (
 ORDER BY products.unit_price;
 
 -- Product sales for 1997
-SELECT orders.order_id, categories.category_name, products.product_name, order_details.quantity, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+SELECT orders.order_id, categories.category_name, products.product_name, order_details.quantity, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM orders
 JOIN order_details ON orders.order_id = order_details.order_id
 JOIN products ON order_details.product_id = products.product_id
@@ -115,7 +115,7 @@ WHERE YEAR(orders.order_date) = 1997
 GROUP BY orders.order_id, categories.category_name, products.product_name, order_details.quantity;
 
 -- Category sales for 1997
-SELECT categories.category_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+SELECT categories.category_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM orders
 JOIN order_details ON orders.order_id = order_details.order_id
 JOIN products ON order_details.product_id = products.product_id
@@ -151,25 +151,25 @@ ORDER BY products.product_name, customers.company_name;
 
 -- Invoice; A simple query to get detailed information for each sale so that invoice can be issued.
 SELECT orders.order_id AS OrderID,
-    customers.company_name AS CustomerCompany, 
-    customers.contact_name AS CustomerContact, 
-    customers.phone AS CustomerPhone,
-    orders.employee_id AS EmployeeOfSale, 
-    CONCAT(employees.first_name, " ", employees.last_name) AS SalesPerson,
-    order_details.quantity AS ProductCount,
-    products.product_name AS ProductName,
-    order_details.unit_price * order_details.quantity * (1 - discount) as Subtotal,
-    orders.order_date AS OrderDate, 
-    orders.required_date AS RequiredDate, 
-    orders.shipped_date AS ShippedDate, 
-    shippers.company_name AS ShippingCompany,
-    shippers.phone AS ShippingCoPhone,
-    orders.freight AS Freight,
-    orders.ship_name AS ShippingLabelName, 
-    orders.ship_address AS ShippingLabelAddress, 
-    orders.ship_city AS ShippingLabelCity,
-    orders.ship_postal_code AS ShippingLabelZIP, 
-    orders.ship_country AS ShippingLabelCountry
+    customers.company_name AS customer_company, 
+    customers.contact_name AS customer_contact, 
+    customers.phone AS customer_phone,
+    orders.employee_id AS employee_of_sale, 
+    CONCAT(employees.first_name, " ", employees.last_name) AS sales_person,
+    order_details.quantity AS product_count,
+    products.product_name AS product_name,
+    order_details.unit_price * order_details.quantity * (1 - discount) as subtotal,
+    orders.order_date AS order_date, 
+    orders.required_date AS required_date, 
+    orders.shipped_date AS shipped_date, 
+    shippers.company_name AS shipping_company,
+    shippers.phone AS shipping_co_phone,
+    orders.freight AS freight,
+    orders.ship_name AS shipping_label_name, 
+    orders.ship_address AS shipping_label_address, 
+    orders.ship_city AS shipping_label_city,
+    orders.ship_postal_code AS shipping_label_zip, 
+    orders.ship_country AS shipping_label_country
 FROM orders
 JOIN order_details ON orders.order_id = order_details.order_id
 JOIN customers ON orders.customer_id = customers.customer_id
