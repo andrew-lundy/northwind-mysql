@@ -373,7 +373,6 @@ SELECT supplier_id, company_name, product_count, supplier_rank
 FROM RankedSuppliers
 WHERE supplier_rank <= 3;
 
-
 -- Find the top shipper.
 SELECT ship_via AS shipper_id, shippers.company_name, COUNT(ship_via) AS shipment_count
 FROM orders
