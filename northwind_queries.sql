@@ -380,11 +380,3 @@ JOIN shippers ON orders.ship_via = shippers.shipper_id
 GROUP BY ship_via
 ORDER BY shipment_count DESC
 LIMIT 1;
-
-SHOW tables;
-DROP TABLE customers_temp;
-
-ALTER TABLE customer_customer_demo DROP FOREIGN KEY customer_customer_demo_ibfk_2;
-
-DESCRIBE customer_customer_demo;
-DESCRIBE customers_temp;
