@@ -14,10 +14,10 @@ JOIN order_details ON orders.order_id = order_details.order_id
 GROUP BY Year;
 
 -- Find all sales; describe each sale (order id, shipped date, subtotal, year) and order by the most recent orders.
-SELECT orders.order_id AS OrderID, orders.shipped_date AS shipped_date, b.Subtotal, YEAR(orders.shipped_date) as year
+SELECT orders.order_id AS OrderID, orders.shipped_date AS shipped_date, b.subtotal, YEAR(orders.shipped_date) as year
 FROM orders
 JOIN (
-	SELECT order_details.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as Subtotal
+	SELECT order_details.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 	FROM order_details
 	GROUP BY order_details.order_id
 ) AS b
@@ -179,22 +179,22 @@ JOIN shippers ON orders.ship_via = shippers.shipper_id
 ORDER BY orders.order_id;
 
 -- Number of units in stock by category and supplier continent
-SELECT categories.category_name AS Category, suppliers.region AS Region, SUM(products.units_in_stock) AS UnitsInStock
+SELECT categories.category_name AS category, suppliers.region AS Region, SUM(products.units_in_stock) AS units_in_stock
 FROM categories
 JOIN products ON categories.category_id = products.category_id
 JOIN suppliers ON products.supplier_id = suppliers.supplier_id
 GROUP BY categories.category_name, suppliers.region;
 
 -- OR
-SELECT categories.category_name AS Category,
+SELECT categories.category_name AS category,
 	CASE
 		WHEN suppliers.country IN ('UK', 'Sweden', 'Germany', 'France', 'Italy', 'Spain', 'Denmark', 'Netherlands', 'Finland', 'Norway') THEN 'EMEA'
         WHEN suppliers.country IN ('USA', 'Canada') THEN 'NA'
         WHEN suppliers.country IN ('Brazil') THEN 'LATAM'
         WHEN suppliers.country IN ('Japan', 'Singapore', 'Australia') THEN 'APAC'
         ELSE 'Unknown country; cannot find region'
-    END as 'SupplierContinent', 
-    SUM(products.units_in_stock) AS UnitsInStock
+    END as 'supplier_continent', 
+    SUM(products.units_in_stock) AS units_in_stock
 FROM categories
 JOIN products ON categories.category_id = products.category_id
 JOIN suppliers ON products.supplier_id = suppliers.supplier_id
@@ -242,29 +242,30 @@ FROM (
 WHERE row_num = 1;
 
 -- Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount.
-SELECT CONCAT(first_name, ' ', last_name) AS Salesperson, FormattedSubtotal, ship_region AS Region
+-- OPTIMIZATION: If formatting the subtotal is not neccessary on the database layer, `formatted_subtotal` can be removed and the formatting can be done on the application side. In testing, this reduced the mean query duration from 0.0072 to 0.0052.
+SELECT CONCAT(first_name, ' ', last_name) AS salesperson, formatted_subtotal, ship_region AS region
 FROM (
 	SELECT 
 		employees.employee_id,
 		employees.first_name,
 		employees.last_name,
 		orders.ship_region,
-        SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as Subtotal,
-        FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as FormattedSubtotal,
+        SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal,
+        FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal,
 		ROW_NUMBER() OVER(PARTITION BY ship_region ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) as row_num
 	FROM employees
 	JOIN orders on employees.employee_id = orders.employee_id
 	JOIN order_details ON orders.order_id = order_details.order_id
 	GROUP BY employee_id, ship_region
-) AS TopSalesperson
+) AS top_salesperson
 WHERE row_num = 1;
 
 -- View all products and their sales per quarter of each year.
 SELECT products.product_name,
-    FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'Qtr 1',
-	FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'Qtr 2',
-    FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 3 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'Qtr 3',
-    FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 4 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'Qtr 4',
+    FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'qtr_1',
+	FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'qtr_2',
+    FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 3 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'qtr_3',
+    FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 4 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'qtr_4',
     YEAR(orders.order_date) AS order_year
 FROM products
 JOIN order_details ON products.product_id = order_details.product_id
