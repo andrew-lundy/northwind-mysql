@@ -7,6 +7,8 @@ JOIN products ON order_details.product_id = products.product_id
 GROUP BY orders.order_id
 ORDER BY orders.order_id;
 
+EXPLAIN 
+
 -- Find the total amount of orders for each year.
 SELECT YEAR(orders.order_date) AS Year, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM orders
