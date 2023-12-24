@@ -1,13 +1,13 @@
 -- Start of "Part 1" (https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php)
 -- For each order, calculate a subtotal. 
-SELECT orders.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal, COUNT(products.product_id) AS products
+EXPLAIN SELECT orders.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal, COUNT(products.product_id) AS products
 FROM orders 
 JOIN order_details ON orders.order_id = order_details.order_id
 JOIN products ON order_details.product_id = products.product_id
 GROUP BY orders.order_id
 ORDER BY orders.order_id;
 
-EXPLAIN 
+
 
 -- Find the total amount of orders for each year.
 SELECT YEAR(orders.order_date) AS Year, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
