@@ -33,7 +33,11 @@ JOIN employees ON orders.employee_id = employees.employee_id
 GROUP BY orders.employee_id, orders.ship_country
 ORDER BY orders.employee_id;
 
+SHOW INDEXES FROM orders;
 SHOW INDEXES FROM employees;
+DESCRIBE employees;
+
+CREATE INDEX employee_name_id ON employees (employee_id, last_name, first_name);
 
 -- For each employee, get their sales details broken down by country.
 SELECT orders.ship_country, orders.order_id, employees.first_name, employees.last_name, b.subtotal
