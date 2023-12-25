@@ -9,13 +9,13 @@ ORDER BY orders.order_id;
 
 
 -- Find the total amount of orders for each year.
-SELECT YEAR(orders.order_date) AS Year, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
+EXPLAIN SELECT YEAR(orders.order_date) AS Year, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM orders
 JOIN order_details ON orders.order_id = order_details.order_id
 GROUP BY Year;
 
 -- Find all sales; describe each sale (order id, shipped date, subtotal, year) and order by the most recent orders.
-EXPLAIN SELECT orders.order_id AS OrderID, orders.shipped_date AS shipped_date, b.subtotal, YEAR(orders.shipped_date) as year
+SELECT orders.order_id AS OrderID, orders.shipped_date AS shipped_date, b.subtotal, YEAR(orders.shipped_date) as year
 FROM orders
 JOIN (
 	SELECT order_details.order_id, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
@@ -26,12 +26,14 @@ ON orders.order_id = b.order_id
 ORDER BY Year DESC;
 
 -- For each employee, get their total sales amount per country.
-SELECT orders.ship_country, employees.first_name, employees.last_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
+EXPLAIN SELECT orders.ship_country, employees.first_name, employees.last_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM order_details
 JOIN orders ON order_details.order_id = orders.order_id
 JOIN employees ON orders.employee_id = employees.employee_id
 GROUP BY orders.employee_id, orders.ship_country
 ORDER BY orders.employee_id;
+
+SHOW INDEXES FROM employees;
 
 -- For each employee, get their sales details broken down by country.
 SELECT orders.ship_country, orders.order_id, employees.first_name, employees.last_name, b.subtotal
