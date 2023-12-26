@@ -22,7 +22,7 @@ I have added the world regions because the `suppliers` table containes a `region
 - [x] Update `region` column in `employees` table to `state`
 - [x] Add `region` column to `employees` table; use the new world regions
 - [x] Add orders from APAC
-- [x] Write queries with the new data; top products per region, top salesperson per region, etc.
+- [x] Write custom queries that focus on product performance; top products per region, top salesperson per region, etc.
 <br><br>
 ## Installation
 The project does not contain any installation steps. To create the tables and add the data, use the [northwind_creation_and_insertion.sql](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_creation_and_insert.sql) file.
