@@ -1,5 +1,5 @@
 -- MySQL dump 10.13  Distrib 8.0.33, for macos13.3 (x86_64)
---
+-- Northwind MySQL
 -- Host: localhost    Database: northwind
 -- ------------------------------------------------------
 -- Server version	8.0.33
@@ -178,7 +178,8 @@ CREATE TABLE `employees` (
   `notes` text,
   `reports_to` smallint DEFAULT NULL,
   `photo_path` varchar(400) DEFAULT NULL,
-  PRIMARY KEY (`employee_id`)
+  PRIMARY KEY (`employee_id`),
+  KEY `employee_name_id` (`employee_id`,`last_name`,`first_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -249,6 +250,7 @@ CREATE TABLE `orders` (
   KEY `customer_id` (`customer_id`),
   KEY `ship_via` (`ship_via`),
   KEY `orders_ibfk_2` (`employee_id`),
+  KEY `order_id` (`order_id`),
   CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`),
   CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`employee_id`),
   CONSTRAINT `orders_ibfk_3` FOREIGN KEY (`ship_via`) REFERENCES `shippers` (`shipper_id`)
@@ -420,4 +422,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2023-12-16  0:02:16
+-- Dump completed on 2023-12-26 18:06:44
