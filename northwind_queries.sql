@@ -9,7 +9,7 @@ ORDER BY orders.order_id;
 
 
 -- Find the total amount of orders for each year.
-EXPLAIN SELECT YEAR(orders.order_date) AS Year, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
+SELECT YEAR(orders.order_date) AS Year, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM orders
 JOIN order_details ON orders.order_id = order_details.order_id
 GROUP BY Year;
@@ -26,18 +26,13 @@ ON orders.order_id = b.order_id
 ORDER BY Year DESC;
 
 -- For each employee, get their total sales amount per country.
-EXPLAIN SELECT orders.ship_country, employees.first_name, employees.last_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
+SELECT orders.ship_country, employees.first_name, employees.last_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM order_details
 JOIN orders ON order_details.order_id = orders.order_id
 JOIN employees ON orders.employee_id = employees.employee_id
 GROUP BY orders.employee_id, orders.ship_country
 ORDER BY orders.employee_id;
 
-SHOW INDEXES FROM orders;
-SHOW INDEXES FROM employees;
-DESCRIBE employees;
-
-CREATE INDEX employee_name_id ON employees (employee_id, last_name, first_name);
 
 -- For each employee, get their sales details broken down by country.
 SELECT orders.ship_country, orders.order_id, employees.first_name, employees.last_name, b.subtotal
@@ -56,7 +51,7 @@ SELECT DISTINCT products.*
 FROM products
 WHERE products.discontinued = 0
 ORDER BY products.product_name;
-
+ 
 -- Current product list
 SELECT DISTINCT products.*
 FROM products
@@ -67,7 +62,7 @@ WHERE products.discontinued = 0;
 SELECT order_details.order_id as order_id, order_details.product_id as product_id, products.product_name as product_name, order_details.unit_price as unit_price, order_details.quantity as quantity, order_details.discount as order_discount, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
 FROM order_details
 JOIN products ON order_details.product_id = products.product_id
-GROUP BY OrderID, ProductID, UnitPrice, Quantity, OrderDiscount;
+GROUP BY order_id, product_id, unit_price, quantity, order_discount;
 
 -- Sales by category; for each category, we get the list of products sold and the total sales amount.
 SELECT categories.category_name, products.product_name, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as subtotal
@@ -75,6 +70,8 @@ FROM categories
 JOIN products USING (category_id)
 JOIN order_details USING (product_id)
 GROUP BY categories.category_id, categories.category_name, products.product_name;
+
+SELECT DISTINCT * FROM products;
 
 -- Ten most expensive producs
 SELECT products.product_name, products.unit_price
