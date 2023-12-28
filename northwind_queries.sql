@@ -71,6 +71,8 @@ JOIN products USING (category_id)
 JOIN order_details USING (product_id)
 GROUP BY categories.category_id, categories.category_name, products.product_name;
 
+SELECT DISTINCT * FROM products;
+
 -- Ten most expensive producs
 SELECT products.product_name, products.unit_price
 FROM products
