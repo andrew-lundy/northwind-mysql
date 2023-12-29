@@ -71,19 +71,41 @@ JOIN products USING (category_id)
 JOIN order_details USING (product_id)
 GROUP BY categories.category_id, categories.category_name, products.product_name;
 
-SELECT DISTINCT * FROM products;
-
 -- Ten most expensive producs
 SELECT products.product_name, products.unit_price
 FROM products
 ORDER BY products.unit_price DESC
 LIMIT 10;
 
+-- Top 5 selling products
+SELECT product_name, formatted_subtotal
+FROM (
+	SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
+	FROM order_details
+	JOIN products ON order_details.product_id = products.product_id
+	WHERE products.units_in_stock > (
+		SELECT AVG(products.units_in_stock)
+		FROM products
+	)
+	GROUP BY order_details.product_id, products.product_name, products.units_in_stock
+	ORDER BY subtotal DESC
+    LIMIT 5
+) AS LowSalesHighInventoryProducts;
+
 -- Products by category
 SELECT DISTINCT categories.category_name, products.product_name
 FROM categories
 JOIN products ON categories.category_id = products.category_id
 ORDER BY categories.category_name, products.product_name;
+
+-- How many products per category
+SELECT DISTINCT categories.category_name, COUNT(products.product_name) AS products_per_category
+FROM categories
+JOIN products ON categories.category_id = products.category_id
+GROUP BY categories.category_name
+ORDER BY categories.category_name;
+
+SELECT * FROM products;
 
 -- Active products by category
 SELECT DISTINCT categories.category_name, products.product_name, products.discontinued
@@ -98,6 +120,7 @@ FROM customers
 UNION
 SELECT suppliers.city, suppliers.company_name, suppliers.contact_name, 'Suppliers'
 FROM suppliers;
+
 
 -- Start of "Part 3" (https://www.geeksengine.com/database/problem-solving/northwind-queries-part-3.php)
 -- Products above average price
@@ -277,7 +300,6 @@ JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name, order_year;
 
 -- HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
-
 -- 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
 -- To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
 -- This would indicate a product that performs better than average.
