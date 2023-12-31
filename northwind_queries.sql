@@ -121,7 +121,6 @@ UNION
 SELECT suppliers.city, suppliers.company_name, suppliers.contact_name, 'Suppliers'
 FROM suppliers;
 
-
 -- Start of "Part 3" (https://www.geeksengine.com/database/problem-solving/northwind-queries-part-3.php)
 -- Products above average price
 SELECT products.product_name, products.unit_price
@@ -299,6 +298,17 @@ JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name, order_year;
 
+SELECT products.product_name,
+    SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_1',
+	SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_2',
+    SUM(CASE WHEN QUARTER(orders.order_date) = 3 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_3',
+    SUM(CASE WHEN QUARTER(orders.order_date) = 4 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_4'
+FROM products
+JOIN order_details ON products.product_id = order_details.product_id
+JOIN orders ON order_details.order_id = orders.order_id
+GROUP BY products.product_name;
+
+
 -- HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
 -- 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
 -- To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
@@ -361,15 +371,16 @@ ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount))
 -- Seasonal Trends: Do certain products exhibit seasonal sales patterns?
 -- Top 3 products per quarter (by sales)
 WITH RankedProducts AS (
-	SELECT products.product_id, products.product_name, QUARTER(orders.order_date) AS quarter,
+	SELECT products.product_id, products.product_name, categories.category_name, QUARTER(orders.order_date) AS quarter,
 		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal,
 		RANK() OVER(PARTITION BY QUARTER(orders.order_date) ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) AS product_rank
     FROM order_details
     JOIN products ON order_details.product_id = products.product_id
     JOIN orders ON order_details.order_id = orders.order_id
-	GROUP BY products.product_id, QUARTER(orders.order_date)
+    JOIN categories ON categories.category_id = products.category_id
+	GROUP BY products.product_id, categories.category_name, QUARTER(orders.order_date)
 )
-SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal
+SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal, category_name
 FROM RankedProducts
 WHERE product_rank <= 3;
 
