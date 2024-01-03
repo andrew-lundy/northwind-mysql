@@ -121,6 +121,7 @@ UNION
 SELECT suppliers.city, suppliers.company_name, suppliers.contact_name, 'Suppliers'
 FROM suppliers;
 
+
 -- Start of "Part 3" (https://www.geeksengine.com/database/problem-solving/northwind-queries-part-3.php)
 -- Products above average price
 SELECT products.product_name, products.unit_price
@@ -384,6 +385,20 @@ SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal, category_name
 FROM RankedProducts
 WHERE product_rank <= 3;
 
+WITH RankedProducts AS (
+	SELECT products.product_name, QUARTER(orders.order_date) AS quarter,
+		RANK() OVER(PARTITION BY QUARTER(orders.order_date) ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) AS product_rank
+    FROM order_details
+    JOIN products ON order_details.product_id = products.product_id
+    JOIN orders ON order_details.order_id = orders.order_id
+    JOIN categories ON categories.category_id = products.category_id
+	GROUP BY product_name, QUARTER(orders.order_date)
+)
+SELECT CAST(quarter AS CHAR) quarter, product_name
+FROM RankedProducts
+WHERE product_rank <= 3;
+
+
 -- List the products and their sales per quarter.
 SELECT products.product_name,
 	SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_1,
@@ -418,3 +433,7 @@ JOIN shippers ON orders.ship_via = shippers.shipper_id
 GROUP BY ship_via
 ORDER BY shipment_count DESC
 LIMIT 1;
+
+SELECT * FROM products;
+
+-- Find shipper who ships product - then find the max order count
