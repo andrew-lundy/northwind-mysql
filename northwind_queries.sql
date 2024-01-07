@@ -298,6 +298,7 @@ JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name, order_year;
 
+-- View all products and their total sales per quarter.
 SELECT products.product_name,
     SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_1',
 	SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_2',
@@ -307,7 +308,6 @@ FROM products
 JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name;
-
 
 -- HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
 -- 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
@@ -367,7 +367,6 @@ JOIN products ON categories.category_id = products.category_id
 JOIN order_details ON products.product_id = order_details.product_id
 GROUP BY categories.category_id
 ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC;
-
 
 -- Seasonal Trends: Do certain products exhibit seasonal sales patterns?
 -- Top 3 products per quarter (by sales)
