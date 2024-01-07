@@ -105,8 +105,6 @@ JOIN products ON categories.category_id = products.category_id
 GROUP BY categories.category_name
 ORDER BY categories.category_name;
 
-SELECT * FROM products;
-
 -- Active products by category
 SELECT DISTINCT categories.category_name, products.product_name, products.discontinued
 FROM categories
