@@ -1,6 +1,6 @@
 # Northwind MySQL Custom Query Descriptions
 ## Overview
-Documentation of the custom queries I have written. The queries are focused on product performance.
+Documentation of the custom queries I have written. The queries are focused on product performance and start on [line 237](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_queries.sql#L237).
 
 ### Top categories per region
 ```
@@ -61,7 +61,8 @@ FROM (
 WHERE row_num = 1;
 ```
 
--- View all products and their sales per quarter of each year.
+### View all products and their sales per quarter of each year.
+```
 SELECT products.product_name,
     FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'qtr_1',
 	FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'qtr_2',
@@ -72,7 +73,10 @@ FROM products
 JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name, order_year;
+```
 
+### View all products and their total sales per quarter.
+```
 SELECT products.product_name,
     SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_1',
 	SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_2',
@@ -82,12 +86,13 @@ FROM products
 JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name;
+```
 
-
--- HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
--- 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
--- To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
--- This would indicate a product that performs better than average.
+## HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
+### 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
+To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
+This would indicate a product that performs better than average.
+```
 SELECT product_id, product_name, formatted_subtotal FROM (
 	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
 	FROM order_details
@@ -96,9 +101,11 @@ SELECT product_id, product_name, formatted_subtotal FROM (
 ) AS product_subtotals
 WHERE subtotal > @average
 ORDER BY subtotal DESC;
+```
 
--- 2. Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
--- First, define 'low sales' and 'high inventory'. 'High inventory' = `units_in_stock` is greater than the average of all `units_in_stock` count combined. 'Low sales' = less than average, based on the subtotal.
+### 2. Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
+First, define 'low sales' and 'high inventory'. 'High inventory' = `units_in_stock` is greater than the average of all `units_in_stock` count combined. 'Low sales' = less than average, based on the subtotal.
+```
 CALL FindAverageSubtotal(@average);
 SELECT @average;
 
@@ -115,8 +122,10 @@ BEGIN
 	) AS product_subtotal_averages;
 END //
 DELIMITER ;
+```
 
--- Query that finds products, their current "in stock" total, and subtotal of sales.
+**Query that finds products with less than average sales and greater than the average "in stock" total.**
+```
 SELECT product_name, units_in_stock, formatted_subtotal
 FROM (
 	SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
@@ -130,9 +139,11 @@ FROM (
 	HAVING subtotal < @average  
 	ORDER BY subtotal ASC
 ) AS LowSalesHighInventoryProducts;
+```
 
--- 3. Product Category Performance: Are there particular product categories that perform better than others? Can we analyze sales, profitability, and customer preferences within different categories?
--- Find categories and their total sales (add "total amount of products for each category")
+### 3. Product Category Performance: Are there particular product categories that perform better than others? Can we analyze sales, profitability, and customer preferences within different categories?
+Find categories and their total sales (add "total amount of products for each category")
+```
 SELECT categories.category_name, 
 	FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal,
     COUNT(order_details.quantity) AS orders_with_cat,
@@ -142,10 +153,11 @@ JOIN products ON categories.category_id = products.category_id
 JOIN order_details ON products.product_id = order_details.product_id
 GROUP BY categories.category_id
 ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC;
+```
 
-
--- Seasonal Trends: Do certain products exhibit seasonal sales patterns?
--- Top 3 products per quarter (by sales)
+## Seasonal Trends: Do certain products exhibit seasonal sales patterns?
+### Top 3 products per quarter (by sales)
+```
 WITH RankedProducts AS (
 	SELECT products.product_id, products.product_name, categories.category_name, QUARTER(orders.order_date) AS quarter,
 		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal,
@@ -159,9 +171,11 @@ WITH RankedProducts AS (
 SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal, category_name
 FROM RankedProducts
 WHERE product_rank <= 3;
+```
 
--- List the products and their sales per quarter.
--- This can be modified to use a WHERE clause to filter by year. Example: WHERE YEAR(orders.order_date) = 1997
+### List the products and their sales per quarter.
+(This can be modified to use a WHERE clause to filter by year. Example: WHERE YEAR(orders.order_date) = 1997)
+```
 SELECT products.product_name,
 	SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_1,
     SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_2,
@@ -171,8 +185,10 @@ FROM products
 JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name;
+```
 
--- Find the top 3 suppliers based on the number of products they sell.
+### Find the top 3 suppliers based on the number of products they sell.
+```
 WITH RankedSuppliers AS (
 	SELECT suppliers.supplier_id, 
 		suppliers.company_name,
@@ -185,16 +201,20 @@ WITH RankedSuppliers AS (
 SELECT supplier_id, company_name, product_count, supplier_rank
 FROM RankedSuppliers
 WHERE supplier_rank <= 3;
+```
 
--- Find the top shipper.
+### Find the top shipper.
+```
 SELECT ship_via AS shipper_id, shippers.company_name, COUNT(ship_via) AS shipment_count
 FROM orders
 JOIN shippers ON orders.ship_via = shippers.shipper_id
 GROUP BY ship_via
 ORDER BY shipment_count DESC
 LIMIT 1;
+```
 
--- Categories and their subtotals only
+### Categories and their subtotals only
+```
 WITH CategorySales AS (
 	SELECT categories.category_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal, COUNT(DISTINCT products.product_id) AS product_count
 	FROM categories
@@ -205,8 +225,10 @@ WITH CategorySales AS (
 )
 SELECT category_name, formatted_subtotal
 FROM CategorySales;
+```
 
--- Total sales per product
+### Total sales per product
+```
 SELECT product_name, subtotal
 FROM (
 	SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
@@ -219,10 +241,13 @@ FROM (
 	GROUP BY order_details.product_id, products.product_name, products.units_in_stock
 	ORDER BY subtotal DESC
 ) AS TotalSalesPerProduct;
+```
 
--- Category product count
+### Category product count
+```
 SELECT categories.category_name, COUNT(DISTINCT products.product_id) AS product_count
 FROM categories
 JOIN products USING (category_id)
 JOIN order_details USING (product_id)
 GROUP BY categories.category_id, categories.category_name;
+```
