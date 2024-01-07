@@ -2,7 +2,7 @@
 ## Overview
 Documentation of the custom queries I have written. The queries are focused on product performance and start on [line 237](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_queries.sql#L237).
 
-### Top categories per region
+### Top categories per region.
 ```
 SELECT products.product_name, categories.category_name, orders.ship_region
 FROM products
@@ -42,8 +42,8 @@ WHERE row_num = 1;
 
 ### Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount.
 OPTIMIZATION: If formatting the subtotal is not neccessary on the database layer, `formatted_subtotal` can be removed and the formatting can be done on the application side. In testing, this reduced the mean query duration from 0.0072 to 0.0052.
-SELECT CONCAT(first_name, ' ', last_name) AS salesperson, formatted_subtotal, ship_region AS region
 ```
+SELECT CONCAT(first_name, ' ', last_name) AS salesperson, formatted_subtotal, ship_region AS region
 FROM (
 	SELECT 
 		employees.employee_id,
@@ -156,7 +156,7 @@ ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount))
 ```
 
 ## Seasonal Trends: Do certain products exhibit seasonal sales patterns?
-### Top 3 products per quarter (by sales)
+### Top 3 products per quarter (by sales).
 ```
 WITH RankedProducts AS (
 	SELECT products.product_id, products.product_name, categories.category_name, QUARTER(orders.order_date) AS quarter,
@@ -213,7 +213,7 @@ ORDER BY shipment_count DESC
 LIMIT 1;
 ```
 
-### Categories and their subtotals only
+### Categories and their subtotals only.
 ```
 WITH CategorySales AS (
 	SELECT categories.category_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal, COUNT(DISTINCT products.product_id) AS product_count
@@ -227,7 +227,7 @@ SELECT category_name, formatted_subtotal
 FROM CategorySales;
 ```
 
-### Total sales per product
+### Total sales per product.
 ```
 SELECT product_name, subtotal
 FROM (
@@ -243,7 +243,7 @@ FROM (
 ) AS TotalSalesPerProduct;
 ```
 
-### Category product count
+### Category product count.
 ```
 SELECT categories.category_name, COUNT(DISTINCT products.product_id) AS product_count
 FROM categories

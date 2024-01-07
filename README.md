@@ -33,3 +33,6 @@ The database schema can be found in [northwind_schema.pdf](https://github.com/an
 There is currently no model from MySQL Workbench in the repo due to a bug with MySQL Workbench on macOS Sonoma. See issues:
 - [https://discussions.apple.com/thread/255164269](https://discussions.apple.com/thread/255164269).
 - [https://forums.mysql.com/read.php?152,710054,710058](https://forums.mysql.com/read.php?152,710054,710058).
+
+## Custom Query Documentation
+The documentation for the custom queries I've written can be found here: [CustomQueryDescriptions.md](https://github.com/andrew-lundy/northwind-mysql/blob/main/CustomQueryDescriptions.md).
