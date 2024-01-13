@@ -235,12 +235,16 @@ GROUP BY categories.category_name,
 
 -- HERE: Start of custom queries; focused on product performance.
 -- Top categories per region
-SELECT products.product_name, categories.category_name, orders.ship_region
+SELECT categories.category_name, orders.ship_region
 FROM products
 JOIN categories ON products.category_id = categories.category_id
 JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
-WHERE orders.ship_region IS NOT NULL;
+WHERE orders.ship_region IS NOT NULL
+GROUP BY category_name, ship_region;
+
+SELECT categories.category_name, orders.ship_region
+
 
 -- Find the top product for a single region; 'top product' meaning highest quantity sold.
 SELECT products.product_id, products.product_name, order_details.quantity, orders.ship_region
