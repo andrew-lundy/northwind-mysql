@@ -35,4 +35,4 @@ There is currently no model from MySQL Workbench in the repo due to a bug with M
 - [https://forums.mysql.com/read.php?152,710054,710058](https://forums.mysql.com/read.php?152,710054,710058).
 
 ## Custom Query Documentation
-The documentation for the custom queries I've written can be found here: [CustomQueryDescriptions.md](https://github.com/andrew-lundy/northwind-mysql/blob/main/CustomQueryDescriptions.md).
+The documentation for the custom queries I have written can be found here: [CustomQueryDescriptions.md](https://github.com/andrew-lundy/northwind-mysql/blob/main/CustomQueryDescriptions.md).
