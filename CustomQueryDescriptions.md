@@ -3,6 +3,7 @@
 Documentation of the custom queries I have written. The queries are focused on product performance and start on [line 237](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_queries.sql#L237).
 
 ### Top categories per region.
+This query uses four tables to 
 ```
 SELECT products.product_name, categories.category_name, orders.ship_region
 FROM products
@@ -29,7 +30,7 @@ SELECT product_id, product_name, sales_count, ship_region
 FROM (
 	SELECT
 		products.product_id,
-        products.product_name,
+		products.product_name,
 		order_details.quantity AS sales_count,
 		orders.ship_region,
 		ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
