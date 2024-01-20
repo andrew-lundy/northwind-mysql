@@ -237,54 +237,14 @@ GROUP BY categories.category_name,
 -- Top categories per region
 SELECT category_name, ship_region
 FROM (
-	SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
+	SELECT categories.category_name, orders.ship_region, SUM(order_details.quantity) as total_quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY SUM(order_details.quantity) DESC) as row_num
 	FROM products
 	JOIN categories ON products.category_id = categories.category_id
 	JOIN order_details ON products.product_id = order_details.product_id
 	JOIN orders ON order_details.order_id = orders.order_id
+	GROUP BY categories.category_name, orders.ship_region
 ) AS TopCategories
 WHERE row_num = 1;
-
-
-SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
-	FROM products
-	JOIN categories ON products.category_id = categories.category_id
-	JOIN order_details ON products.product_id = order_details.product_id
-	JOIN orders ON order_details.order_id = orders.order_id;
-
-SELECT categories.category_name, orders.ship_region, SUM(order_details.quantity)
-FROM products
-JOIN categories ON products.category_id = categories.category_id
-JOIN order_details ON products.product_id = order_details.product_id
-JOIN orders ON order_details.order_id = orders.order_id
-GROUP BY orders.ship_region, categories.category_name; 
-
-
-SELECT category_name, ship_region, SUM(quantity)
-FROM (
-	SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region) as row_num
-	FROM products
-	JOIN categories ON products.category_id = categories.category_id
-	JOIN order_details ON products.product_id = order_details.product_id
-	JOIN orders ON order_details.order_id = orders.order_id
-)
-AS TableName
-GROUP BY category_name, ship_region;
-
-
-SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
-FROM products
-JOIN categories ON products.category_id = categories.category_id
-JOIN order_details ON products.product_id = order_details.product_id
-JOIN orders ON order_details.order_id = orders.order_id
-ORDER BY category_name, ship_region;
-
-SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region) as row_num
-	FROM products
-	JOIN categories ON products.category_id = categories.category_id
-	JOIN order_details ON products.product_id = order_details.product_id
-	JOIN orders ON order_details.order_id = orders.order_id
-    ORDER BY category_name, ship_region;
 
 
 -- Find the top product for a single region; 'top product' meaning highest quantity sold.

@@ -51,8 +51,8 @@ FROM (
 		employees.first_name,
 		employees.last_name,
 		orders.ship_region,
-        SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal,
-        FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal,
+		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal,
+		FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal,
 		ROW_NUMBER() OVER(PARTITION BY ship_region ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) as row_num
 	FROM employees
 	JOIN orders on employees.employee_id = orders.employee_id
