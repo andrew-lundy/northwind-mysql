@@ -235,7 +235,7 @@ GROUP BY categories.category_name,
 
 -- HERE: Start of custom queries; focused on product performance.
 -- Top categories per region
-SELECT category_name, ship_region
+SELECT category_name, ship_region, total_quantity
 FROM (
 	SELECT categories.category_name, orders.ship_region, SUM(order_details.quantity) as total_quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY SUM(order_details.quantity) DESC) as row_num
 	FROM products
@@ -245,6 +245,43 @@ FROM (
 	GROUP BY categories.category_name, orders.ship_region
 ) AS TopCategories
 WHERE row_num = 1;
+
+SELECT categories.category_name, orders.ship_region, SUM(order_details.quantity) as total_quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY SUM(order_details.quantity) DESC) as row_num
+FROM products
+JOIN categories ON products.category_id = categories.category_id
+JOIN order_details ON products.product_id = order_details.product_id
+JOIN orders ON order_details.order_id = orders.order_id
+GROUP BY categories.category_name, orders.ship_region;
+
+SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) AS row_num
+FROM products
+JOIN categories ON products.category_id = categories.category_id
+JOIN order_details ON products.product_id = order_details.product_id
+JOIN orders ON order_details.order_id = orders.order_id;
+
+SELECT SUM(quantity)
+FROM (
+	SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
+	FROM products
+	JOIN categories ON products.category_id = categories.category_id
+	JOIN order_details ON products.product_id = order_details.product_id
+	JOIN orders ON order_details.order_id = orders.order_id
+	WHERE category_name = 'Meat/Poultry' AND ship_region = 2
+
+) AS QuantityTable;
+
+SELECT SUM(quantity)
+FROM (
+	SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
+	FROM products
+	JOIN categories ON products.category_id = categories.category_id
+	JOIN order_details ON products.product_id = order_details.product_id
+	JOIN orders ON order_details.order_id = orders.order_id
+	WHERE category_name = 'Beverages' AND ship_region = 2
+
+) AS QuantityTable;
+
+
 
 
 -- Find the top product for a single region; 'top product' meaning highest quantity sold.
