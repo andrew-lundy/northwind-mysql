@@ -234,7 +234,7 @@ GROUP BY categories.category_name,
 -- ---------------------------------------------------------------------------------------------------------------------
 
 -- HERE: Start of custom queries; focused on product performance.
--- Top categories per region
+-- 1. Top categories per region
 SELECT category_name, ship_region, total_quantity
 FROM (
 	SELECT categories.category_name, orders.ship_region, SUM(order_details.quantity) as total_quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY SUM(order_details.quantity) DESC) as row_num
@@ -246,45 +246,20 @@ FROM (
 ) AS TopCategories
 WHERE row_num = 1;
 
-SELECT categories.category_name, orders.ship_region, SUM(order_details.quantity) as total_quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY SUM(order_details.quantity) DESC) as row_num
-FROM products
-JOIN categories ON products.category_id = categories.category_id
-JOIN order_details ON products.product_id = order_details.product_id
-JOIN orders ON order_details.order_id = orders.order_id
-GROUP BY categories.category_name, orders.ship_region;
-
-SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) AS row_num
-FROM products
-JOIN categories ON products.category_id = categories.category_id
-JOIN order_details ON products.product_id = order_details.product_id
-JOIN orders ON order_details.order_id = orders.order_id;
-
-SELECT SUM(quantity)
-FROM (
-	SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
+-- The same query can be done using a Common Table Expression
+WITH TopCategoriesCTE AS (
+	SELECT categories.category_name, orders.ship_region, SUM(order_details.quantity) as total_quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY SUM(order_details.quantity) DESC) as row_num
 	FROM products
 	JOIN categories ON products.category_id = categories.category_id
 	JOIN order_details ON products.product_id = order_details.product_id
 	JOIN orders ON order_details.order_id = orders.order_id
-	WHERE category_name = 'Meat/Poultry' AND ship_region = 2
+	GROUP BY categories.category_name, orders.ship_region
+)
+SELECT category_name, ship_region, total_quantity
+FROM TopCategoriesCTE
+WHERE row_num = 1;
 
-) AS QuantityTable;
-
-SELECT SUM(quantity)
-FROM (
-	SELECT categories.category_name, orders.ship_region, order_details.quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
-	FROM products
-	JOIN categories ON products.category_id = categories.category_id
-	JOIN order_details ON products.product_id = order_details.product_id
-	JOIN orders ON order_details.order_id = orders.order_id
-	WHERE category_name = 'Beverages' AND ship_region = 2
-
-) AS QuantityTable;
-
-
-
-
--- Find the top product for a single region; 'top product' meaning highest quantity sold.
+-- 2. Find the top product for a single region; 'top product' meaning highest quantity sold.
 SELECT products.product_id, products.product_name, order_details.quantity, orders.ship_region
 FROM order_details
 JOIN orders ON order_details.order_id = orders.order_id
@@ -293,7 +268,7 @@ WHERE ship_region = 4
 ORDER BY quantity DESC
 LIMIT 1;
 
--- Find the top product for each region; 'top product' meaning highest quantity sold.
+-- 3. Find the top product for each region; 'top product' meaning highest quantity sold.
 SELECT product_id, product_name, sales_count, ship_region
 FROM (
 	SELECT
@@ -308,7 +283,7 @@ FROM (
 ) AS ProductSales
 WHERE row_num = 1;
 
--- Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount.
+-- 4. Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount.
 -- OPTIMIZATION: If formatting the subtotal is not neccessary on the database layer, `formatted_subtotal` can be removed and the formatting can be done on the application side. In testing, this reduced the mean query duration from 0.0072 to 0.0052.
 SELECT CONCAT(first_name, ' ', last_name) AS salesperson, formatted_subtotal, ship_region AS region
 FROM (
@@ -327,7 +302,7 @@ FROM (
 ) AS top_salesperson
 WHERE row_num = 1;
 
--- View all products and their sales per quarter of each year.
+-- 5. View all products and their sales per quarter of each year.
 SELECT products.product_name,
     FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'qtr_1',
 	FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 0) AS 'qtr_2',
@@ -339,7 +314,7 @@ JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name, order_year;
 
--- View all products and their total sales per quarter.
+-- 6. View all products and their total sales per quarter.
 SELECT products.product_name,
     SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_1',
 	SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_2',
