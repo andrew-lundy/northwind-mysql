@@ -2,10 +2,7 @@
 ## Overview
 Documentation of the custom queries I have written. The queries are focused on product performance and start on [line 236](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_queries.sql#L236).
 
-### Top categories per region.
-The window function, `ROW_NUMBER()`, is used in the `FROM` clause of the main query to partition the data by the region the order was shipped to (`orders.ship_region`). Within each partition, the rows are ordered based on the sum of `order_details.quantity`, in descending order. `ROW_NUMBER()` assigns a unique sequential integer to each row within a partition result set. In this query, the number gets reset to "1" for each new region (i.e., each new partition).
-
-In the main query, the results of the subquery are filtered to records that contain "1" in column `row_num`. This ensures only the category with the most products sold in a region are returned in the main query. Three columns are selected in the main query - the category name, region number, and total number of products sold from the category.
+### Find the top categories per region.
 ```
 SELECT category_name, ship_region, total_quantity
 FROM (
@@ -21,6 +18,10 @@ FROM (
 ) AS TopCategories
 WHERE row_num = 1;
 ```
+The window function, `ROW_NUMBER()`, is used in the `FROM` clause of the main query to partition the data by the region the order was shipped to (`orders.ship_region`). Within each partition, the rows are ordered based on the sum of `order_details.quantity`, in descending order. `ROW_NUMBER()` assigns a unique sequential integer to each row within a partition result set. In this query, the number gets reset to "1" for each new region (i.e., each new partition).
+
+In the main query, the results of the subquery are filtered to records that contain "1" in column `row_num`. This ensures only the category with the most products sold in a region are returned in the main query. Three columns are selected in the main query - the category name, region number, and total number of products sold from the category.
+
 The result:<br>
 
 | category_name | ship_region | total_quantity |
@@ -30,14 +31,30 @@ The result:<br>
 | Beverages   | 3           | 1577             |
 | Beverages   | 4           | 73               |
 
+-- The same query can be done using a Common Table Expression --
+```
+WITH TopCategoriesCTE AS (
+	SELECT categories.category_name, orders.ship_region, SUM(order_details.quantity) as total_quantity, ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY SUM(order_details.quantity) DESC) as row_num
+	FROM products
+	JOIN categories ON products.category_id = categories.category_id
+	JOIN order_details ON products.product_id = order_details.product_id
+	JOIN orders ON order_details.order_id = orders.order_id
+	GROUP BY categories.category_name, orders.ship_region
+)
+SELECT category_name, ship_region, total_quantity
+FROM TopCategoriesCTE
+WHERE row_num = 1;
+```
 
 ### Find the top product for a single region; 'top product' meaning highest quantity sold.
+This query uses two inner joins to combine data from three tables, `order_details`, `orders`, and `products`. It filters the results by the region the product was shipped in (3 in this example), and orders the results by the quantity of the product shipped in descending order. It then limits the amount of results by 1 to ensure we get the top product.
+
 ```
 SELECT products.product_id, products.product_name, order_details.quantity, orders.ship_region
 FROM order_details
 JOIN orders ON order_details.order_id = orders.order_id
 JOIN products ON order_details.product_id = products.product_id
-WHERE ship_region = 4
+WHERE ship_region = 3
 ORDER BY quantity DESC
 LIMIT 1;
 ```
