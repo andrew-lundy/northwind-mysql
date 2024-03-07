@@ -58,7 +58,19 @@ WHERE ship_region = 3
 ORDER BY quantity DESC
 LIMIT 1;
 ```
+
+The result:<br>
+
+| product_id | product_name | quantity 		   | ship_region
+| ---------- | -----------  | ---------------- | ----------
+|  60        | C 			| 5735             | 3		   |
+
 ### Find the top product for each region; 'top product' meaning highest quantity sold.
+This query uses a subquery that joins three tables (`products`, `order_details`, and `orders`). The subquery uses the window function `ROW_NUMBER()` to partition the data based on the region the product was shipped to. It orders these results by the total quantity of each product shipped in descending order. 
+
+In the main query, the results of the subquery are filtered to records that contain "1" in column `row_num`. This ensures only the products with the highest quantity sold in each region is returned in the main query. Four columns are selected in the main query - the product ID, product name, the sales count for the product, and the region the order was shipped to.
+
+
 ```
 SELECT product_id, product_name, sales_count, ship_region
 FROM (
