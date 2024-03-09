@@ -68,7 +68,7 @@ The result:<br>
 ### Find the top product for each region; 'top product' meaning highest quantity sold.
 This query uses a subquery that joins three tables (`products`, `order_details`, and `orders`). The subquery uses the window function `ROW_NUMBER()` to partition the data based on the region the product was shipped to. It orders these results by the total quantity of each product shipped in descending order. 
 
-In the main query, the results of the subquery are filtered to records that contain "1" in column `row_num`. This ensures only the products with the highest quantity sold in each region is returned in the main query. Four columns are selected in the main query - the product ID, product name, the sales count for the product, and the region the order was shipped to.
+In the outer query, the results of the subquery are filtered to records that contain "1" in column `row_num`. This ensures only the products with the highest quantity sold in each region is returned in the main query. Four columns are selected in the main query - the product ID, product name, the sales count for the product, and the region the order was shipped to.
 
 
 ```
@@ -88,6 +88,12 @@ WHERE row_num = 1;
 ```
 
 ### Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount.
+This query contains a subquery that uses two inner joins to combine data from three tables, `employees`, `orders`, and `order_details`. The subquery's `SELECT` statement retrieves data from the tables that represents the sales of each salesperson; the `GROUP BY` clause groups this data by the employee's ID and the region the sale took place in. 
+
+There is a window function, `ROW_NUMBER()`, used to partition the data based on the region, and order it based on the subtotal of each salesperson's sales in the region in descending order. This ensures the top sales person in each region is ranked first in the partition.
+
+The outer query selects 4 total columns, concatenating two of them as `salesperson`. The other two columns contain the subtotal and region. Because of the window function `ROW_NUMBER()` in the subquery, the outer query has access to the `row_num` column and can filter the data to only display the top salesperson per region based on the rows that contain `1` in the column.
+
 OPTIMIZATION: If formatting the subtotal is not neccessary on the database layer, `formatted_subtotal` can be removed and the formatting can be done on the application side. In testing, this reduced the mean query duration from 0.0072 to 0.0052.
 ```
 SELECT CONCAT(first_name, ' ', last_name) AS salesperson, formatted_subtotal, ship_region AS region
@@ -97,7 +103,6 @@ FROM (
 		employees.first_name,
 		employees.last_name,
 		orders.ship_region,
-		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal,
 		FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal,
 		ROW_NUMBER() OVER(PARTITION BY ship_region ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) as row_num
 	FROM employees
