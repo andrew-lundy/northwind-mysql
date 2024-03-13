@@ -134,6 +134,12 @@ GROUP BY products.product_name, order_year;
 ```
 
 ### View all products and their total sales per quarter.
+This query is aimed at obtaining a seasonal overview of each product's sales; i.e., total sales per quarter of the year. To do this, two `JOIN` clauses are used to combine the data of three tables: `products`, `order_details`, and `orders`. The `SELECT` statement uses four `CASE` statements, each of which check the quarter of `order_date` and calculates the total sales for the product based on the specified quarter in the `CASE` statement. 
+
+If a record does not match the specified order date, the `ELSE` clause sets the value to `0`. This acts as a filter on the data, only retrieving the data for the specified quarter. The sales outside of the specified quarter do not contribute to the sum for that quarter, this is why they are filtered out. Filtering out the sales based on their quarter helps isolate each quarter's data and ensure an accurate analysis of the seasonal sales. 
+
+Each of the `CASE` statements are surrounded by a `SUM` function, which calculates the sum of the product's sales per quarter, taking into account all orders. The results are grouped by `product_name` to ensure there is only one row per product.
+
 ```
 SELECT products.product_name,
     SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_1',
