@@ -141,21 +141,20 @@ If a record does not match the specified order date, the `ELSE` clause sets the 
 Each of the `CASE` statements are surrounded by a `SUM` function, which calculates the sum of the product's sales per quarter, taking into account all orders. The results are grouped by `product_name` to ensure there is only one row per product.
 
 ```
-SELECT products.product_name,
-    SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_1',
-	SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_2',
-    SUM(CASE WHEN QUARTER(orders.order_date) = 3 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_3',
-    SUM(CASE WHEN QUARTER(orders.order_date) = 4 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_4'
-FROM products
-JOIN order_details ON products.product_id = order_details.product_id
-JOIN orders ON order_details.order_id = orders.order_id
-GROUP BY products.product_name;
+SELECT product_id, product_name, formatted_subtotal 
+FROM (
+	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
+	FROM order_details
+	JOIN products ON order_details.product_id = products.product_id
+	GROUP BY product_id
+) AS product_subtotals
+WHERE subtotal > @average
+ORDER BY subtotal DESC;
 ```
 
 ## HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
 ### 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
-To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
-This would indicate a product that performs better than average.
+To accomplish this, I wrote a query that finds all the products and their total sales (subtotals). Then, it filters the results to products that have a subtotal greater than the average, which is stored in the user-defined variable `@average`. This would indicate a product that performs better than average.
 ```
 SELECT product_id, product_name, formatted_subtotal FROM (
 	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
