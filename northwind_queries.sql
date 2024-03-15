@@ -338,7 +338,8 @@ GROUP BY products.product_name;
 -- 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
 -- To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
 -- This would indicate a product that performs better than average.
-SELECT product_id, product_name, formatted_subtotal FROM (
+SELECT product_id, product_name, formatted_subtotal 
+FROM (
 	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
 	FROM order_details
 	JOIN products ON order_details.product_id = products.product_id
