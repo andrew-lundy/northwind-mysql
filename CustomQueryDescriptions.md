@@ -155,9 +155,14 @@ ORDER BY subtotal DESC;
 ## HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
 ### 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
 To accomplish this, I wrote a query that finds all the products and their total sales (subtotals). Then, it filters the results to products that have a subtotal greater than the average, which is stored in the user-defined variable `@average`. This would indicate a product that performs better than average.
+
+There is a subquery in the main query's `FROM` statement which creates a table that represents the products and their total sales by retrieving `product_id`, `product_name`, `subtotal`, and `formatted_subtotal`. The two "subtotal" columns calculate the subtotal by multiplying the product's price (`order_details.unit_price`) by the number of products sold (`order_details.quantity`), and then accounts for any discounts by multiplying these two columns by ***(1 - `order_details.discount`)***.
+
 ```
-SELECT product_id, product_name, formatted_subtotal FROM (
-	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
+SELECT product_id, product_name, formatted_subtotal 
+FROM (
+	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, 
+    FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
 	FROM order_details
 	JOIN products ON order_details.product_id = products.product_id
 	GROUP BY product_id
