@@ -340,13 +340,20 @@ GROUP BY products.product_name;
 -- This would indicate a product that performs better than average.
 SELECT product_id, product_name, formatted_subtotal 
 FROM (
-	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
+	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, 
+    FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
 	FROM order_details
 	JOIN products ON order_details.product_id = products.product_id
 	GROUP BY product_id
 ) AS product_subtotals
 WHERE subtotal > @average
 ORDER BY subtotal DESC;
+
+SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, 
+    FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
+	FROM order_details
+	JOIN products ON order_details.product_id = products.product_id
+	GROUP BY product_id;
 
 -- 2. Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
 -- First, define 'low sales' and 'high inventory'. 'High inventory' = `units_in_stock` is greater than the average of all `units_in_stock` count combined. 'Low sales' = less than average, based on the subtotal.
