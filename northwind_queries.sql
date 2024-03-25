@@ -335,12 +335,33 @@ JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name;
 
 -- HERE: The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
+DELIMITER //
+CREATE PROCEDURE FindAverageSubtotal(OUT average DECIMAL(10,2))
+BEGIN
+	SELECT AVG(subtotal) INTO average
+	FROM (
+		SELECT products.product_name, 
+		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal,
+		FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
+		FROM products
+		JOIN order_details ON products.product_id = order_details.product_id
+		GROUP BY products.product_name
+		ORDER BY subtotal DESC
+	) AS product_subtotal_averages;
+END //
+DELIMITER ;
+
+CALL FindAverageSubtotal(@average);
+SELECT @average;
+
 -- 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
 -- To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
 -- This would indicate a product that performs better than average.
 SELECT product_id, product_name, formatted_subtotal 
 FROM (
-	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, 
+	SELECT order_details.product_id AS product_id,
+	products.product_name AS product_name, 
+	SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, 
     FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
 	FROM order_details
 	JOIN products ON order_details.product_id = products.product_id
@@ -351,22 +372,6 @@ ORDER BY subtotal DESC;
 
 -- 2. Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
 -- First, define 'low sales' and 'high inventory'. 'High inventory' = `units_in_stock` is greater than the average of all `units_in_stock` count combined. 'Low sales' = less than average, based on the subtotal.
-CALL FindAverageSubtotal(@average);
-SELECT @average;
-
-DELIMITER //
-CREATE PROCEDURE FindAverageSubtotal(OUT average DECIMAL(10,2))
-BEGIN
-	SELECT AVG(subtotal) INTO average
-	FROM (
-		SELECT products.product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
-		FROM products
-		JOIN order_details ON products.product_id = order_details.product_id
-		GROUP BY products.product_name
-		ORDER BY subtotal DESC
-	) AS product_subtotal_averages;
-END //
-DELIMITER ;
 
 -- Query that finds products, their current "in stock" total, and subtotal of sales.
 SELECT product_name, units_in_stock, formatted_subtotal
