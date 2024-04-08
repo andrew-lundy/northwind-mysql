@@ -141,27 +141,56 @@ If a record does not match the specified order date, the `ELSE` clause sets the 
 Each of the `CASE` statements are surrounded by a `SUM` function, which calculates the sum of the product's sales per quarter, taking into account all orders. The results are grouped by `product_name` to ensure there is only one row per product.
 
 ```
-SELECT product_id, product_name, formatted_subtotal 
-FROM (
-	SELECT order_details.product_id AS product_id, products.product_name AS product_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal
-	FROM order_details
-	JOIN products ON order_details.product_id = products.product_id
-	GROUP BY product_id
-) AS product_subtotals
-WHERE subtotal > @average
-ORDER BY subtotal DESC;
+SELECT products.product_name,
+    SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_1',
+	SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_2',
+    SUM(CASE WHEN QUARTER(orders.order_date) = 3 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_3',
+    SUM(CASE WHEN QUARTER(orders.order_date) = 4 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_4'
+FROM products
+JOIN order_details ON products.product_id = order_details.product_id
+JOIN orders ON order_details.order_id = orders.order_id
+GROUP BY products.product_name;
 ```
 
 ## The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
+For this section, there were a couple of queries where I needed to know the average subtotal of all the products. I used a stored procedure to accomplish this.
+
+The first thing to do is change the delimiter using the `DELIMITER` command. I changed it from `;` to `//`. This allows the use of `;` within the stored procedure.
+
+Then, the stored procedure is created with an `OUT` parameter named `average`. This parameter holds the result of the procedure. The data returned from the queries within the stored procedure will be held in this parameter and returned when calling the procedure.
+
+The body of a procedure is enclosed in the `BEGIN` and `END` block. The body contains the queries that are executed when the procedure is called. The `SELECT` statement calculates the average of `subtotal`, which is derived from a subquery within the `FROM` statement. The `FROM` statement pulls data from two tables, `order_details` and `products`, that represents the total sales per product. These results act as a temporary table for the outer query. It selects the product name (`products.product_name`) and calculates the subtotals of the product orders (`SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal`). The results are grouped by `products.product_name` and ordered by `subtotal` in descending order, placing the product with the most sales at the top. The body is closed with `END`. 
+
+The delimiter gets changed back to `;`. The stored procedure is called by using the `CALL` statement. To select the value of the stored procedure's `OUT` parameter, use `SELECT @average`.
+
+```
+DELIMITER //
+CREATE PROCEDURE FindAverageSubtotal(OUT average DECIMAL(10,2))
+BEGIN
+	SELECT AVG(subtotal) INTO average
+	FROM (
+		SELECT products.product_name, 
+		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal,
+		FROM products
+		JOIN order_details ON products.product_id = order_details.product_id
+		GROUP BY products.product_name
+		ORDER BY subtotal DESC
+	) AS product_subtotal_averages;
+END //
+DELIMITER ;
+
+CALL FindAverageSubtotal(@average);
+SELECT @average;
+```
+
 ### 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
 To accomplish this, I wrote a query that finds all the products and their total sales (subtotals). Then, it filters the results to products that have a subtotal greater than the average subtotal of all products, which is stored in the user-defined variable `@average`. The results are ordered by their subtotals, in descending order.
 
-There is a subquery in the main query's `FROM` statement which creates a table that represents the products and their total sales by retrieving `product_id`, `product_name`, `subtotal`, and `formatted_subtotal` from two tables, `order_details` and `products`.
+There is a subquery in the main query's `FROM` statement which creates a table that represents the products and their total sales by retrieving `product_id`, `product_name`, `subtotal`, and `formatted_subtotal` from two tables, `order_details` and `products`. These two tables are joined on `product_id`.
 
 The two "subtotal" columns calculate the subtotal by multiplying the product's price (`order_details.unit_price`) by the number of products sold (`order_details.quantity`), and then accounts for any discounts by multiplying these two columns by ***(1 - `order_details.discount`)***.
 
 Since the aggregate function `SUM` is used, the data must be grouped. Here, the data is grouped by `product_id`, with the total sales of that product represented in the `subtotal` column.
-
 
 ```
 SELECT product_id, product_name, formatted_subtotal 
@@ -180,26 +209,7 @@ ORDER BY subtotal DESC;
 
 ### 2. Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
 First, define 'low sales' and 'high inventory'. 'High inventory' = `units_in_stock` is greater than the average of all `units_in_stock` count combined. 'Low sales' = less than average, based on the subtotal.
-```
-CALL FindAverageSubtotal(@average);
-SELECT @average;
 
-DELIMITER //
-CREATE PROCEDURE FindAverageSubtotal(OUT average DECIMAL(10,2))
-BEGIN
-	SELECT AVG(subtotal) INTO average
-	FROM (
-		SELECT products.product_name, 
-		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal,
-		FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
-		FROM products
-		JOIN order_details ON products.product_id = order_details.product_id
-		GROUP BY products.product_name
-		ORDER BY subtotal DESC
-	) AS product_subtotal_averages;
-END //
-DELIMITER ;
-```
 
 **Query that finds products with less than average sales and greater than the average "in stock" total.**
 ```
