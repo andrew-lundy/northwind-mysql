@@ -190,7 +190,7 @@ There is a subquery in the main query's `FROM` statement which creates a table t
 
 The two "subtotal" columns calculate the subtotal by multiplying the product's price (`order_details.unit_price`) by the number of products sold (`order_details.quantity`), and then accounts for any discounts by multiplying these two columns by ***(1 - `order_details.discount`)***.
 
-Since the aggregate function `SUM` is used, the data must be grouped. Here, the data is grouped by `product_id`, with the total sales of that product represented in the `subtotal` column.
+Since the aggregate function `SUM` is used, the data must be grouped. Here, the data is grouped by `product_id`, with the total sales of that product represented in the `subtotal` column. 
 
 ```
 SELECT product_id, product_name, formatted_subtotal 
@@ -208,14 +208,24 @@ ORDER BY subtotal DESC;
 ```
 
 ### 2. Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
-First, define 'low sales' and 'high inventory'. 'High inventory' = `units_in_stock` is greater than the average of all `units_in_stock` count combined. 'Low sales' = less than average, based on the subtotal.
+First, define 'low sales' and 'high inventory'. 'High inventory' = higher than average `units_in_stock` value. verage of all `units_in_stock` count combined. 'Low sales' = a less than average subtotal.
 
 
 **Query that finds products with less than average sales and greater than the average "in stock" total.**
+
+A subquery is used in the `FROM` statement to retrieve information about products such as the name, units in stock, and subtotal from two tables: `order_details` and `products`. The `WHERE` clause filters results by selecting all records that have more than the average amount of items in stock. The results are grouped by `product_id`, `product_name`, and `units_in_stock`. 
+
+The `HAVING` clause filters the aggregated results by records that contain sales totals which are below the average. The `subtotal` represents the aggregated subtotals of the groups defined by `GROUP BY`. `@average` is a placeholder that contains the value of the average subtotal across all products ($16,278.50). 
+
+
 ```
 SELECT product_name, units_in_stock, formatted_subtotal
 FROM (
-	SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
+	SELECT 
+		products.product_name, 
+        products.units_in_stock, 
+        SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, 
+        FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
 	FROM order_details
 	JOIN products ON order_details.product_id = products.product_id
 	WHERE products.units_in_stock > (
@@ -224,7 +234,7 @@ FROM (
 	)
 	GROUP BY order_details.product_id, products.product_name, products.units_in_stock
 	HAVING subtotal < @average  
-	ORDER BY subtotal ASC
+	ORDER BY subtotal DESC
 ) AS LowSalesHighInventoryProducts;
 ```
 
