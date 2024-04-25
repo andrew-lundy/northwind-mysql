@@ -208,18 +208,21 @@ ORDER BY subtotal DESC;
 ```
 
 ### 2. Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
-First, define 'low sales' and 'high inventory'. 'High inventory' = higher than average `units_in_stock` value. verage of all `units_in_stock` count combined. 'Low sales' = a less than average subtotal.
+First, define 'low sales' and 'high inventory'. 'High inventory' = higher than average `units_in_stock` value. 'Low sales' = a less than average subtotal.
 
 
 **Query that finds products with less than average sales and greater than the average "in stock" total.**
 
-A subquery is used in the `FROM` statement to retrieve information about products such as the name, units in stock, and subtotal from two tables: `order_details` and `products`. The `WHERE` clause filters results by selecting all records that have more than the average amount of items in stock. The results are grouped by `product_id`, `product_name`, and `units_in_stock`. 
+A subquery is used in the `FROM` statement to retrieve information from two tables (`order_details` and `products`) about products such as the name, units in stock, and subtotal. The `WHERE` clause filters results by selecting all records that have more than the average amount of items in stock. Because of the use of the aggregate function `SUM()`, the results are grouped by `product_id`, `product_name`, and `units_in_stock` - representing a single, unique product per group.
 
-The `HAVING` clause filters the aggregated results by records that contain sales totals which are below the average. The `subtotal` represents the aggregated subtotals of the groups defined by `GROUP BY`. `@average` is a placeholder that contains the value of the average subtotal across all products ($16,278.50). 
 
+The `HAVING` clause filters the aggregated results by records that contain sales totals which are below the average. `subtotal` represents the aggregated subtotals of the groups defined by `GROUP BY`. `@average` is a placeholder that contains the value of the average subtotal across all products; this value is set in a stored procedure ($16,278.50). The results are then ordered by the `subtotal` in descending order. Finally, a table alias must be used on the `FROM` statement. Here, `LowSalesHighInventoryProducts` is used.
 
 ```
-SELECT product_name, units_in_stock, formatted_subtotal
+SELECT
+	LowSalesHighInventoryProducts.product_name,
+    LowSalesHighInventoryProducts.units_in_stock,
+    LowSalesHighInventoryProducts.formatted_subtotal
 FROM (
 	SELECT 
 		products.product_name, 
