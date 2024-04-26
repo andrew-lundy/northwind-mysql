@@ -374,10 +374,9 @@ ORDER BY subtotal DESC;
 -- First, define 'low sales' and 'high inventory'. 'High inventory' = `units_in_stock` is greater than the average of all `units_in_stock` count combined. 'Low sales' = less than average, based on the subtotal.
 
 -- Query that finds products, their current "in stock" total, and subtotal of sales.
-SELECT
-	LowSalesHighInventoryProducts.product_name,
-    LowSalesHighInventoryProducts.units_in_stock,
-    LowSalesHighInventoryProducts.formatted_subtotal
+SELECT lowPerformingProducts.product_name,
+    lowPerformingProducts.units_in_stock,
+    lowPerformingProducts.formatted_subtotal
 FROM (
 	SELECT 
 		products.product_name, 
@@ -390,10 +389,10 @@ FROM (
 		SELECT AVG(products.units_in_stock)
 		FROM products
 	)
-	GROUP BY order_details.product_id, products.product_name, products.units_in_stock
+	GROUP BY order_details.product_id
 	HAVING subtotal < @average  
 	ORDER BY subtotal DESC
-) AS LowSalesHighInventoryProducts;
+) AS lowPerformingProducts;
 
 -- 3. Product Category Performance: Are there particular product categories that perform better than others? Can we analyze sales, profitability, and customer preferences within different categories?
 -- Find categories and their total sales (add "total amount of products for each category")
@@ -404,7 +403,7 @@ SELECT categories.category_name,
 FROM categories
 JOIN products ON categories.category_id = products.category_id
 JOIN order_details ON products.product_id = order_details.product_id
-GROUP BY categories.category_id
+GROUP BY categories.category_id, categories.category_name
 ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC;
 
 -- Seasonal Trends: Do certain products exhibit seasonal sales patterns?
