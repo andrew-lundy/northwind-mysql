@@ -219,10 +219,9 @@ A subquery is used in the `FROM` statement to retrieve information from two tabl
 The `HAVING` clause filters the aggregated results by records that contain sales totals which are below the average. `subtotal` represents the aggregated subtotals of the groups defined by `GROUP BY`. `@average` is a placeholder that contains the value of the average subtotal across all products; this value is set in a stored procedure ($16,278.50). The results are then ordered by the `subtotal` in descending order. Finally, a table alias must be used on the `FROM` statement. Here, `LowSalesHighInventoryProducts` is used.
 
 ```
-SELECT
-	LowSalesHighInventoryProducts.product_name,
-    LowSalesHighInventoryProducts.units_in_stock,
-    LowSalesHighInventoryProducts.formatted_subtotal
+SELECT lowPerformingProducts.product_name,
+    lowPerformingProducts.units_in_stock,
+    lowPerformingProducts.formatted_subtotal
 FROM (
 	SELECT 
 		products.product_name, 
@@ -235,14 +234,18 @@ FROM (
 		SELECT AVG(products.units_in_stock)
 		FROM products
 	)
-	GROUP BY order_details.product_id, products.product_name, products.units_in_stock
+	GROUP BY order_details.product_id
 	HAVING subtotal < @average  
 	ORDER BY subtotal DESC
-) AS LowSalesHighInventoryProducts;
+) AS lowPerformingProducts;
 ```
 
 ### 3. Product Category Performance: Are there particular product categories that perform better than others? Can we analyze sales, profitability, and customer preferences within different categories?
-Find categories and their total sales (add "total amount of products for each category")
+This query retrieves data from three tables, `categories`, `products`, and `order_details`; which are joined together by two `JOIN` statements. Four columns are retrieved, which represent categories alongside their subtotal (`formatted_subtotal`), the number of times a product from the category is ordered, (`orders_with_cat`), and the total number of products within the category (`products_per_cat`).
+
+
+To ensure each row represents a single category, results are grouped by `category_id`. Finally, the aggregated results are ordered by the subtotal, which is calculated by `SUM(order_details.unit_price * order_details.quantity * (1 - discount))`.
+
 ```
 SELECT categories.category_name, 
 	FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal,
