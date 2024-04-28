@@ -260,9 +260,16 @@ ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount))
 
 ## Seasonal Trends: Do certain products exhibit seasonal sales patterns?
 ### Top 3 products per quarter (by sales).
+This query uses a Common Table Expression (CTE) to retrieve data from four tables (`order_details`, `products`, `orders`, and `categories`) that represents each product's total sales for each quarter. It does this by selecting the product name (`product_name`), category name (`category_name`), quarter of the product's order date (`QUARTER(orders.order_date)`), and subtotal (`SUM(order_details.unit_price * order_details.quantity * (1 - discount))`). It also uses the window function `RANK()` to rank the results within partitions, which are defined by the order date's quarter (`QUARTER(orders.order_date)`).
+
+The results are then grouped by the product ID, category name, and the order date's quarter.
+
+
 ```
 WITH RankedProducts AS (
-	SELECT products.product_id, products.product_name, categories.category_name, QUARTER(orders.order_date) AS quarter,
+	SELECT products.product_name, 
+        categories.category_name, 
+        QUARTER(orders.order_date) AS quarter,
 		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal,
 		RANK() OVER(PARTITION BY QUARTER(orders.order_date) ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) AS product_rank
     FROM order_details
