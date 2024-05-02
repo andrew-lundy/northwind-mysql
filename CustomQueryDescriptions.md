@@ -260,10 +260,13 @@ ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount))
 
 ## Seasonal Trends: Do certain products exhibit seasonal sales patterns?
 ### Top 3 products per quarter (by sales).
-This query uses a Common Table Expression (CTE) to retrieve data from four tables (`order_details`, `products`, `orders`, and `categories`) that represents each product's total sales for each quarter. It does this by selecting the product name (`product_name`), category name (`category_name`), quarter of the product's order date (`QUARTER(orders.order_date)`), and subtotal (`SUM(order_details.unit_price * order_details.quantity * (1 - discount))`). It also uses the window function `RANK()` to rank the results within partitions, which are defined by the order date's quarter (`QUARTER(orders.order_date)`).
+This query uses a Common Table Expression (CTE) to retrieve data from four tables (`order_details`, `products`, `orders`, and `categories`) that represents each product's total sales for each quarter. It does this by selecting the product name (`product_name`), category name (`category_name`), quarter of the product's order date (`QUARTER(orders.order_date)`), and subtotal (`SUM(order_details.unit_price * order_details.quantity * (1 - discount))`).
 
-The results are then grouped by the product ID, category name, and the order date's quarter.
+It also uses the window function `RANK()` to rank the results within partitions, which are defined by the order date's quarter (`QUARTER(orders.order_date)`). The partitions are ordered by `subtotal` in descending order to ensure the products with the most sales per quarter are at the top of the list.
 
+The results are then grouped by `product_id`, `category_name`, and `QUARTER(orders.order_date)`. This grouping ensures that each `subtotal` represents a single product and category for each quarter. Also note the `RANK()` function depends on the grouping to accurately calculate and order the results.
+
+After the CTE `RankedProducts` is used to rank the products, the final `SELECT` statement retrieves four columns from the CTE: `product_name`, `quarter`, `FORMAT(subtotal, 2)`, and `category_name`. Then, the results are filtered by the ranking order produced by the window function `RANK()`; only the top three products from each partition will be included in the results.
 
 ```
 WITH RankedProducts AS (
@@ -276,7 +279,7 @@ WITH RankedProducts AS (
     JOIN products ON order_details.product_id = products.product_id
     JOIN orders ON order_details.order_id = orders.order_id
     JOIN categories ON categories.category_id = products.category_id
-	GROUP BY products.product_id, categories.category_name, QUARTER(orders.order_date)
+	GROUP BY products.product_name, categories.category_name, QUARTER(orders.order_date)
 )
 SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal, category_name
 FROM RankedProducts

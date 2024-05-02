@@ -403,13 +403,15 @@ SELECT categories.category_name,
 FROM categories
 JOIN products ON categories.category_id = products.category_id
 JOIN order_details ON products.product_id = order_details.product_id
-GROUP BY categories.category_id, categories.category_name
+GROUP BY categories.category_id
 ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC;
 
 -- Seasonal Trends: Do certain products exhibit seasonal sales patterns?
 -- Top 3 products per quarter (by sales)
 WITH RankedProducts AS (
-	SELECT products.product_id, products.product_name, categories.category_name, QUARTER(orders.order_date) AS quarter,
+	SELECT products.product_name, 
+        categories.category_name, 
+        QUARTER(orders.order_date) AS quarter,
 		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal,
 		RANK() OVER(PARTITION BY QUARTER(orders.order_date) ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) AS product_rank
     FROM order_details
@@ -421,6 +423,7 @@ WITH RankedProducts AS (
 SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal, category_name
 FROM RankedProducts
 WHERE product_rank <= 3;
+
 
 -- List the products and their sales per quarter.
 -- This can be modified to use a WHERE clause to filter by year. Example: WHERE YEAR(orders.order_date) = 1997
