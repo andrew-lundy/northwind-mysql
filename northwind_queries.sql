@@ -418,7 +418,7 @@ WITH RankedProducts AS (
     JOIN products ON order_details.product_id = products.product_id
     JOIN orders ON order_details.order_id = orders.order_id
     JOIN categories ON categories.category_id = products.category_id
-	GROUP BY products.product_id, categories.category_name, QUARTER(orders.order_date)
+	GROUP BY products.product_name, categories.category_name, QUARTER(orders.order_date)
 )
 SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal, category_name
 FROM RankedProducts
@@ -436,6 +436,7 @@ FROM products
 JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name;
+
 
 -- Find the top 3 suppliers based on the number of products they sell.
 WITH RankedSuppliers AS (
