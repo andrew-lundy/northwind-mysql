@@ -288,6 +288,11 @@ WHERE product_rank <= 3;
 
 ### List the products and their sales per quarter.
 (This can be modified to use a WHERE clause to filter by year. Example: WHERE YEAR(orders.order_date) = 1997)
+
+This query uses the `SELECT` statement to retrieve a product's name (`product_name`) and the subtotal for each quarter of the year. To represent the subtotal for each quarter, the `CASE` statement is used to check the quarter of `order_date`, and based on the value (`1`, `2`, `3` or `4`) it calculates the subtotal using the same formula used in previous queries: `order_details.unit_price * order_details.quantity * (1 - discount)`. If the product has no subtotal for the quarter, `0` is placed in the column.
+
+To retrieve this data, three tables are joined together: `products`, `order_details`, and `orders`. The results are grouped by `product_name`.
+
 ```
 SELECT products.product_name,
 	SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_1,
@@ -301,15 +306,21 @@ GROUP BY products.product_name;
 ```
 
 ### Find the top 3 suppliers based on the number of products they sell.
+This query uses a Common Table Expression that retrieves the supplier ID (`suppliers.supplier_id`), the company name of the supplier (`suppliers.company_name`), and the total product count for the supplier (`COUNT(products.supplier_id)`). It also uses the window function `RANK()` to rank the suppliers based on how many products they supply. This is done by counting the total rows in each group using the function `COUNT(*)` and ordering them in descending order.
+
+The `GROUP BY` statement is used to group the results by `suppliers.supplier_id` and `suppliers.company_name`. This ensures the results are grouped by each supplier.
+
+The final three lines of the query retrieve data from the CTE that represents the top three suppliers based on their rank. The columns retreived include `supplier_id`, `company_name`, `product_count`, and `supplier_rank`. The `WHERE` clause is used to filter records to only the top 3 suppliers.
+
 ```
 WITH RankedSuppliers AS (
 	SELECT suppliers.supplier_id, 
 		suppliers.company_name,
-		COUNT(suppliers.supplier_id) AS product_count,
+		COUNT(products.supplier_id) AS product_count,
 		RANK() OVER(ORDER BY COUNT(*) DESC) as supplier_rank
 	FROM products
     JOIN suppliers ON products.supplier_id = suppliers.supplier_id
-	GROUP BY supplier_id
+	GROUP BY suppliers.supplier_id, suppliers.company_name
 )
 SELECT supplier_id, company_name, product_count, supplier_rank
 FROM RankedSuppliers
