@@ -442,15 +442,16 @@ GROUP BY products.product_name;
 WITH RankedSuppliers AS (
 	SELECT suppliers.supplier_id, 
 		suppliers.company_name,
-		COUNT(suppliers.supplier_id) AS product_count,
+		COUNT(products.supplier_id) AS product_count,
 		RANK() OVER(ORDER BY COUNT(*) DESC) as supplier_rank
 	FROM products
     JOIN suppliers ON products.supplier_id = suppliers.supplier_id
-	GROUP BY supplier_id
+	GROUP BY suppliers.supplier_id, suppliers.company_name
 )
 SELECT supplier_id, company_name, product_count, supplier_rank
 FROM RankedSuppliers
 WHERE supplier_rank <= 3;
+
 
 -- Find the top shipper.
 SELECT ship_via AS shipper_id, shippers.company_name, COUNT(ship_via) AS shipment_count
