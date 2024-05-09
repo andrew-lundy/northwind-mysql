@@ -306,11 +306,13 @@ GROUP BY products.product_name;
 ```
 
 ### Find the top 3 suppliers based on the number of products they sell.
-This query uses a Common Table Expression that retrieves the supplier ID (`suppliers.supplier_id`), the company name of the supplier (`suppliers.company_name`), and the total product count for the supplier (`COUNT(products.supplier_id)`). It also uses the window function `RANK()` to rank the suppliers based on how many products they supply. This is done by counting the total rows in each group using the function `COUNT(*)` and ordering them in descending order.
+This query uses a Common Table Expression that retrieves the supplier ID (`suppliers.supplier_id`), the company name of the supplier (`suppliers.company_name`), and the total product count for the supplier (`COUNT(products.supplier_id)`), where this `COUNT()` function only counts non-null records in the `products.supplier_id` column. 
 
-The `GROUP BY` statement is used to group the results by `suppliers.supplier_id` and `suppliers.company_name`. This ensures the results are grouped by each supplier.
+It also uses the window function `RANK()` to rank the suppliers based on how many products they supply. This is done by counting the total rows in each group using the function `COUNT(*)` and ordering them in descending order. There is no `PARTITION BY` clause because this query is ranking the overall results. The `GROUP BY` statement is used to group the results by `suppliers.supplier_id` and `suppliers.company_name`. This ensures the results are grouped by each supplier. 
 
-The final three lines of the query retrieve data from the CTE that represents the top three suppliers based on their rank. The columns retreived include `supplier_id`, `company_name`, `product_count`, and `supplier_rank`. The `WHERE` clause is used to filter records to only the top 3 suppliers.
+The final three lines of the query retrieve data from the CTE that represents the top three suppliers based on their rank. The columns retrieved include `supplier_id`, `company_name`, `product_count`, and `supplier_rank`. The `WHERE` clause is used to filter records to only the top 3 suppliers.
+
+As SQL does not allow the `WHERE` clause to filter using results from a window function, such as `RANK()`, using a CTE offers a workaround to this as it allows us to calculate the `supplier_rank` and then filter the results.
 
 ```
 WITH RankedSuppliers AS (
