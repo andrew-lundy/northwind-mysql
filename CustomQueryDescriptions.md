@@ -330,11 +330,13 @@ WHERE supplier_rank <= 3;
 ```
 
 ### Find the top shipper.
+This query retrieves data from two tables (`shippers` and `orders`) that represents the shipping company (`shippers.company_name`) and the number of orders they have shipped (`COUNT(orders.ship_via)`). The results are grouped by `shippers.company_name` name and ordered by `shipment_count` in descending order. To ensure only the top shipping company is listed, `LIMIT 1` is used.
+
 ```
-SELECT ship_via AS shipper_id, shippers.company_name, COUNT(ship_via) AS shipment_count
+SELECT shippers.company_name, COUNT(orders.ship_via) AS shipment_count
 FROM orders
 JOIN shippers ON orders.ship_via = shippers.shipper_id
-GROUP BY ship_via
+GROUP BY shippers.company_name
 ORDER BY shipment_count DESC
 LIMIT 1;
 ```

@@ -454,12 +454,13 @@ WHERE supplier_rank <= 3;
 
 
 -- Find the top shipper.
-SELECT ship_via AS shipper_id, shippers.company_name, COUNT(ship_via) AS shipment_count
+SELECT shippers.company_name, COUNT(orders.ship_via) AS shipment_count
 FROM orders
 JOIN shippers ON orders.ship_via = shippers.shipper_id
-GROUP BY ship_via
+GROUP BY shippers.company_name
 ORDER BY shipment_count DESC
 LIMIT 1;
+
 
 -- Categories and their subtotals only
 WITH CategorySales AS (
