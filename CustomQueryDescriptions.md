@@ -341,17 +341,26 @@ ORDER BY shipment_count DESC
 LIMIT 1;
 ```
 
-### Categories and their subtotals only.
+### Categories and their subtotals and product count.
+This query uses a CTE named `CategorySales` and retrieves data from three tables, `categories`, `products`, and `order_details`. The columns retrieved include the category's name (`categories.category_name`), the subtotal (`SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal`) and formatted subtotal (`FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal`). The formatted subtotal wraps the `SUM()` function with the `FORMAT()` function, which formats the subtotal into a currency (USD). The query also retrieves the total product count (`COUNT(DISTINCT products.product_id)`).
+
+The results are grouped by `categories.category_name` and ordered by `subtotal` in descending order. In this query, the `JOIN` clauses utilize the `USING` keyword instead of `ON`, which makes the `JOIN` statement more readable since the columns have identical names. The tables `categories` and `products` are joined using the `category_id` column, while `products` and `order_details` are joined using the `product_id` column.
+
+The final part of the query retrieves the category name, formatted subtotal, and total product count for each category from the `CategorySales` CTE.
+
 ```
 WITH CategorySales AS (
-	SELECT categories.category_name, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal, COUNT(DISTINCT products.product_id) AS product_count
+	SELECT categories.category_name, 
+		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) as subtotal, 
+        FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal, 
+        COUNT(DISTINCT products.product_id) AS product_count
 	FROM categories
 	JOIN products USING (category_id)
 	JOIN order_details USING (product_id)
-	GROUP BY categories.category_id, categories.category_name
+	GROUP BY categories.category_name
 	ORDER BY subtotal DESC
 )
-SELECT category_name, formatted_subtotal
+SELECT category_name, formatted_subtotal, product_count
 FROM CategorySales;
 ```
 
