@@ -478,16 +478,14 @@ SELECT category_name, formatted_subtotal, product_count
 FROM CategorySales;
 
 -- Total sales per product
-SELECT product_name, subtotal
+SELECT product_name, formatted_subtotal
 FROM (
-	SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
+	SELECT products.product_name,
+        SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, 
+        FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
 	FROM order_details
 	JOIN products ON order_details.product_id = products.product_id
-	WHERE products.units_in_stock > (
-		SELECT AVG(products.units_in_stock)
-		FROM products
-	)
-	GROUP BY order_details.product_id, products.product_name, products.units_in_stock
+	GROUP BY order_details.product_id, products.product_name
 	ORDER BY subtotal DESC
 ) AS TotalSalesPerProduct;
 

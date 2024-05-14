@@ -365,17 +365,21 @@ FROM CategorySales;
 ```
 
 ### Total sales per product.
+This query uses a subquery that retrieves data from two tables, `order_details` and `products`. The subquery retrieves the columns `products.product_name`, and the subtotal as calculated by the equation `SUM(order_details.unit_price * order_details.quantity * (1 - discount))`. It also retrieves the formatted subtotal by wrapping the same equation in the `FORMAT()` function.
+
+The results of the subquery are grouped by the product name (`products.product_name`) and then ordered by their subtotals (`subtotal`) in descending order.
+
+The outer query retrieves the product name (`product_name`) and formatted subtotal of each product (`formatted_subtotal`).
+
 ```
-SELECT product_name, subtotal
+SELECT product_name, formatted_subtotal
 FROM (
-	SELECT order_details.product_id, products.product_name, products.units_in_stock, SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
+	SELECT products.product_name,
+        SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal, 
+        FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal
 	FROM order_details
 	JOIN products ON order_details.product_id = products.product_id
-	WHERE products.units_in_stock > (
-		SELECT AVG(products.units_in_stock)
-		FROM products
-	)
-	GROUP BY order_details.product_id, products.product_name, products.units_in_stock
+	GROUP BY products.product_name
 	ORDER BY subtotal DESC
 ) AS TotalSalesPerProduct;
 ```
