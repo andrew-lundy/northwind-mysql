@@ -76,7 +76,7 @@ SELECT product_id, product_name, sales_count, ship_region
 FROM (
 	SELECT
 		products.product_id,
-		products.product_name,
+        products.product_name,
 		order_details.quantity AS sales_count,
 		orders.ship_region,
 		ROW_NUMBER() OVER(PARTITION BY orders.ship_region ORDER BY order_details.quantity DESC) as row_num
@@ -86,6 +86,15 @@ FROM (
 ) AS ProductSales
 WHERE row_num = 1;
 ```
+
+The result:<br>
+
+| product_id | product_name | sales_count 		   | ship_region | row_num
+| ---------- | -----------  | ---------------- 	   | ----------  | ---------- 
+|  39        | Chartreuse verte | 130              | 1		     | 1
+|  55        | Pâté chinois | 120                  | 2		     | 1
+|  60        | Camembert Pierrot | 70              | 3		     | 1
+|  40        | Boston Crab Meat | 40               | 4		     | 1
 
 ### Find the top salesperson for each region; 'top' meaning they have the most sales by total dollar amount.
 This query contains a subquery that uses two inner joins to combine data from three tables, `employees`, `orders`, and `order_details`. The subquery's `SELECT` statement retrieves data from the tables that represents the sales of each salesperson; the `GROUP BY` clause groups this data by the employee's ID and the region the sale took place in. 
@@ -103,7 +112,7 @@ FROM (
 		employees.first_name,
 		employees.last_name,
 		orders.ship_region,
-		FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal,
+        FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) as formatted_subtotal,
 		ROW_NUMBER() OVER(PARTITION BY ship_region ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC) as row_num
 	FROM employees
 	JOIN orders on employees.employee_id = orders.employee_id
@@ -112,6 +121,15 @@ FROM (
 ) AS top_salesperson
 WHERE row_num = 1;
 ```
+
+The result:<br>
+
+| salesperson      | formatted_subtotal | region
+| ---------------  | ------------------ | ----------------
+| Margaret Peacock | 147,763.95         | 1
+| Margaret Peacock | 57,916.99          | 2
+| Nancy Davolio    | 39,398.45          | 3
+| Connor Foster    | 5,049.70           | 4
 
 ### View all products and their sales per quarter of each year.
 This query combines data from three tables, `products`, `order_details`, and `orders`. The `SELECT` statement specifies five columns; the product name, quarters 1-4 with the product's total sales for the quarter, and the year. This data is grouped together using `product_name` and `order_year` via the `GROUP BY` clause to ensure the data is organized by each product and the year the sales were made.
@@ -133,24 +151,58 @@ JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name, order_year;
 ```
 
+The result:<br>
+
+| product_name                   | qtr_1  | qtr_2  | qtr_3  | qtr_4  | order_year |
+|--------------------------------|--------|--------|--------|--------|------------|
+| Chai                           | 0      | 0      | 1,066  | 540    | 1996       |
+| Chai                           | 706    | 878    | 1,175  | 2,129  | 1997       |
+| Chai                           | 3,942  | 2,354  | 0      | 0      | 1998       |
+| Chang                          | 0      | 0      | 2,052  | 966    | 1996       |
+| Chang                          | 2,436  | 228    | 2,062  | 2,313  | 1997       |
+| Chang                          | 2,348  | 3,951  | 0      | 0      | 1998       |
+| Aniseed Syrup                  | 0      | 0      | 240    | 0      | 1996       |
+| Aniseed Syrup                  | 544    | 600    | 140    | 440    | 1997       |
+| Aniseed Syrup                  | 790    | 290    | 0      | 0      | 1998       |
+| Chef Anton's Cajun Seasoning   | 0      | 0      | 352    | 1,500  | 1996       |
+| Chef Anton's Cajun Seasoning   | 225    | 2,970  | 1,338  | 682    | 1997       |
+| Chef Anton's Cajun Seasoning   | 1,067  | 435    | 0      | 0      | 1998       |
+
+(Table has been truncated)
+
 ### View all products and their total sales per quarter.
-This query is aimed at obtaining a seasonal overview of each product's sales; i.e., total sales per quarter of the year. To do this, two `JOIN` clauses are used to combine the data of three tables: `products`, `order_details`, and `orders`. The `SELECT` statement uses four `CASE` statements, each of which check the quarter of `order_date` and calculates the total sales for the product based on the specified quarter in the `CASE` statement. 
+(This can be modified to use a WHERE clause to filter by year. Example: WHERE YEAR(orders.order_date) = 1997)
 
-If a record does not match the specified order date, the `ELSE` clause sets the value to `0`. This acts as a filter on the data, only retrieving the data for the specified quarter. The sales outside of the specified quarter do not contribute to the sum for that quarter, this is why they are filtered out. Filtering out the sales based on their quarter helps isolate each quarter's data and ensure an accurate analysis of the seasonal sales. 
+This query is aimed at obtaining a seasonal overview of each product's sales; i.e., total sales per quarter of the year. To do this, two `JOIN` clauses are used to combine the data of three tables: `products`, `order_details`, and `orders`. The `SELECT` statement uses four `CASE` statements, each of which check the quarter of `order_date` and calculates the total sales for the product based on the specified quarter in the `CASE` statement.
 
-Each of the `CASE` statements are surrounded by a `SUM` function, which calculates the sum of the product's sales per quarter, taking into account all orders. The results are grouped by `product_name` to ensure there is only one row per product.
+If a record does not match the specified order date, the `ELSE` clause sets the value to `0`. This acts as a filter on the data, only retrieving the data for the specified quarter. The sales outside of the specified quarter do not contribute to the sum for that quarter, this is why they are filtered out. Filtering out the sales based on their quarter helps isolate each quarter's data and ensure an accurate analysis of the seasonal sales.
+
+Each of the `CASE` statements are surrounded by a `SUM()` function, which calculates the sum of the product's sales per quarter, taking into account all orders. The `SUM()` function is wrapped in a `FORMAT()` function to increase readability. The results are grouped by `product_name` to ensure there is only one row per product.
 
 ```
 SELECT products.product_name,
-    SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_1',
-	SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_2',
-    SUM(CASE WHEN QUARTER(orders.order_date) = 3 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_3',
-    SUM(CASE WHEN QUARTER(orders.order_date) = 4 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS 'qtr_4'
+    FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 2) AS 'qtr_1',
+	FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 2) AS 'qtr_2',
+    FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 3 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 2) AS 'qtr_3',
+    FORMAT(SUM(CASE WHEN QUARTER(orders.order_date) = 4 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END), 2) AS 'qtr_4'
 FROM products
 JOIN order_details ON products.product_id = order_details.product_id
 JOIN orders ON order_details.order_id = orders.order_id
 GROUP BY products.product_name;
 ```
+
+The result:<br>
+
+| product_name                   | qtr_1     | qtr_2     | qtr_3     | qtr_4     |
+|--------------------------------|-----------|-----------|-----------|-----------|
+| Chai                           | 4,647.60  | 3,231.90  | 2,240.10  | 2,668.50  |
+| Chang                          | 4,784.20  | 4,179.05  | 4,113.50  | 3,279.21  |
+| Aniseed Syrup                  | 1,334.00  | 890.00    | 380.00    | 440.00    |
+| Chef Anton's Cajun Seasoning   | 1,292.28  | 3,404.50  | 1,689.60  | 2,181.52  |
+| Chef Anton's Gumbo Mix         | 1,067.50  | 1,974.88  | 1,675.43  | 629.40    |
+| Grandma's Boysenberry Spread   | 3,517.50  | 399.50    | 2,350.00  | 870.00    |
+
+(Table has been truncated)
 
 ## The following prompts were recommended by: https://chat.openai.com/share/c0e6a00d-9d36-43fd-84ac-0714af9898ee.
 For this section, there were a couple of queries where I needed to know the average subtotal of all the products. I used a stored procedure to accomplish this.
@@ -207,6 +259,19 @@ WHERE subtotal > @average
 ORDER BY subtotal DESC;
 ```
 
+The result:<br>
+
+| product_id | product_name                     | formatted_subtotal |
+|------------|----------------------------------|--------------------|
+| 38         | Côte de Blaye                    | 141,396.74         |
+| 29         | Thüringer Rostbratwurst          | 80,987.62          |
+| 59         | Raclette Courdavault             | 71,155.70          |
+| 62         | Tarte au sucre                   | 47,234.97          |
+| 60         | Camembert Pierrot                | 46,825.48          |
+| 56         | Gnocchi di nonna Alice           | 42,593.06          |
+
+(Table has been truncated)
+
 ### 2. Inventory Management: Are there products in the database that have low sales and high inventory levels? How can we identify and address potential overstock issues for these products?
 First, define 'low sales' and 'high inventory'. 'High inventory' = higher than average `units_in_stock` value. 'Low sales' = a less than average subtotal.
 
@@ -240,6 +305,17 @@ FROM (
 ) AS lowPerformingProducts;
 ```
 
+The result:<br>
+
+| product_name                      | units_in_stock | formatted_subtotal |
+|-----------------------------------|----------------|--------------------|
+| Lakkalikööri                      | 57             | 15,760.44          |
+| Sirop d'érable                    | 113            | 14,352.60          |
+| Schoggi Schokolade                | 49             | 14,222.38          |
+| Louisiana Fiery Hot Pepper Sauce  | 76             | 13,869.89          |
+| Inlagd Sill                       | 112            | 13,458.46          |
+
+
 ### 3. Product Category Performance: Are there particular product categories that perform better than others? Can we analyze sales, profitability, and customer preferences within different categories?
 This query retrieves data from three tables, `categories`, `products`, and `order_details`; which are joined together by two `JOIN` statements. Four columns are retrieved, which represent categories alongside their subtotal (`formatted_subtotal`), the number of times a product from the category is ordered, (`orders_with_cat`), and the total number of products within the category (`products_per_cat`).
 
@@ -257,6 +333,20 @@ JOIN order_details ON products.product_id = order_details.product_id
 GROUP BY categories.category_id
 ORDER BY SUM(order_details.unit_price * order_details.quantity * (1 - discount)) DESC;
 ```
+
+The result:<br>
+
+| category_name   | formatted_subtotal | orders_with_cat | products_per_cat |
+|-----------------|--------------------|-----------------|------------------|
+| Beverages       | 269,283.78         | 407             | 12               |
+| Dairy Products  | 235,299.29         | 367             | 10               |
+| Confections     | 167,580.98         | 336             | 13               |
+| Meat/Poultry    | 163,641.31         | 174             | 6                |
+| Seafood         | 132,094.24         | 332             | 12               |
+| Condiments      | 106,094.09         | 217             | 13               |
+| Produce         | 99,984.58          | 136             | 5                |
+| Grains/Cereals  | 95,744.59          | 196             | 7                |
+
 
 ## Seasonal Trends: Do certain products exhibit seasonal sales patterns?
 ### Top 3 products per quarter (by sales).
@@ -285,32 +375,30 @@ SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal, category_name
 FROM RankedProducts
 WHERE product_rank <= 3;
 ```
+The result:<br>
 
-### List the products and their sales per quarter.
-(This can be modified to use a WHERE clause to filter by year. Example: WHERE YEAR(orders.order_date) = 1997)
+| product_name             | quarter | subtotal    | category_name  |
+|--------------------------|---------|-------------|----------------|
+| Côte de Blaye            | 1       | 85,864.11   | Beverages      |
+| Thüringer Rostbratwurst  | 1       | 27,749.40   | Meat/Poultry   |
+| Raclette Courdavault     | 1       | 23,136.30   | Dairy Products |
+| Raclette Courdavault     | 2       | 19,778.00   | Dairy Products |
+| Côte de Blaye            | 2       | 19,393.60   | Beverages      |
+| Thüringer Rostbratwurst  | 2       | 17,330.60   | Meat/Poultry   |
+| Thüringer Rostbratwurst  | 3       | 13,615.38   | Meat/Poultry   |
+| Tarte au sucre           | 3       | 12,790.85   | Confections    |
+| Camembert Pierrot        | 3       | 12,598.70   | Dairy Products |
+| Côte de Blaye            | 4       | 28,826.90   | Beverages      |
+| Thüringer Rostbratwurst  | 4       | 22,292.24   | Meat/Poultry   |
+| Raclette Courdavault     | 4       | 16,875.10   | Dairy Products |
 
-This query uses the `SELECT` statement to retrieve a product's name (`product_name`) and the subtotal for each quarter of the year. To represent the subtotal for each quarter, the `CASE` statement is used to check the quarter of `order_date`, and based on the value (`1`, `2`, `3` or `4`) it calculates the subtotal using the same formula used in previous queries: `order_details.unit_price * order_details.quantity * (1 - discount)`. If the product has no subtotal for the quarter, `0` is placed in the column.
-
-To retrieve this data, three tables are joined together: `products`, `order_details`, and `orders`. The results are grouped by `product_name`.
-
-```
-SELECT products.product_name,
-	SUM(CASE WHEN QUARTER(orders.order_date) = 1 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_1,
-    SUM(CASE WHEN QUARTER(orders.order_date) = 2 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_2,
-	SUM(CASE WHEN QUARTER(orders.order_date) = 3 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_3,
-    SUM(CASE WHEN QUARTER(orders.order_date) = 4 THEN order_details.unit_price * order_details.quantity * (1 - discount) ELSE 0 END) AS qtr_4
-FROM products
-JOIN order_details ON products.product_id = order_details.product_id
-JOIN orders ON order_details.order_id = orders.order_id
-GROUP BY products.product_name;
-```
 
 ### Find the top 3 suppliers based on the number of products they sell.
 This query uses a Common Table Expression that retrieves the supplier ID (`suppliers.supplier_id`), the company name of the supplier (`suppliers.company_name`), and the total product count for the supplier (`COUNT(products.supplier_id)`), where this `COUNT()` function only counts non-null records in the `products.supplier_id` column. 
 
 It also uses the window function `RANK()` to rank the suppliers based on how many products they supply. This is done by counting the total rows in each group using the function `COUNT(*)` and ordering them in descending order. There is no `PARTITION BY` clause because this query is ranking the overall results. The `GROUP BY` statement is used to group the results by `suppliers.supplier_id` and `suppliers.company_name`. This ensures the results are grouped by each supplier. 
 
-The final three lines of the query retrieve data from the CTE that represents the top three suppliers based on their rank. The columns retrieved include `supplier_id`, `company_name`, `product_count`, and `supplier_rank`. The `WHERE` clause is used to filter records to only the top 3 suppliers.
+The final three lines of the query retrieve data from the CTE that represents the top three suppliers based on their rank. The columns retrieved include `supplier_id`, `company_name`, and `product_count`. The `WHERE` clause is used to filter records to only the top 3 suppliers.
 
 As SQL does not allow the `WHERE` clause to filter using results from a window function, such as `RANK()`, using a CTE offers a workaround to this as it allows us to calculate the `supplier_rank` and then filter the results.
 
@@ -324,10 +412,19 @@ WITH RankedSuppliers AS (
     JOIN suppliers ON products.supplier_id = suppliers.supplier_id
 	GROUP BY suppliers.supplier_id, suppliers.company_name
 )
-SELECT supplier_id, company_name, product_count, supplier_rank
+SELECT supplier_id, company_name, product_count
 FROM RankedSuppliers
 WHERE supplier_rank <= 3;
 ```
+
+The result:<br>
+
+| supplier_id | company_name                   | product_count |
+|-------------|--------------------------------|---------------|
+| 7           | Pavlova, Ltd.                  | 5             |
+| 8           | Specialty Biscuits, Ltd.       | 5             |
+| 12          | Plutzer Lebensmittelgroßmärkte AG | 5             |
+
 
 ### Find the top shipper.
 This query retrieves data from two tables (`shippers` and `orders`) that represents the shipping company (`shippers.company_name`) and the number of orders they have shipped (`COUNT(orders.ship_via)`). The results are grouped by `shippers.company_name` name and ordered by `shipment_count` in descending order. To ensure only the top shipping company is listed, `LIMIT 1` is used.
@@ -340,6 +437,13 @@ GROUP BY shippers.company_name
 ORDER BY shipment_count DESC
 LIMIT 1;
 ```
+
+The result:<br>
+
+| company_name    | shipment_count |
+|-----------------|----------------|
+| United Package  | 326            |
+
 
 ### Categories and their subtotals and product count.
 This query uses a CTE named `CategorySales` and retrieves data from three tables, `categories`, `products`, and `order_details`. The columns retrieved include the category's name (`categories.category_name`), the subtotal (`SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal`) and formatted subtotal (`FORMAT(SUM(order_details.unit_price * order_details.quantity * (1 - discount)), 2) AS formatted_subtotal`). The formatted subtotal wraps the `SUM()` function with the `FORMAT()` function, which formats the subtotal into a currency (USD). The query also retrieves the total product count (`COUNT(DISTINCT products.product_id)`).
@@ -364,6 +468,20 @@ SELECT category_name, formatted_subtotal, product_count
 FROM CategorySales;
 ```
 
+The result:<br>
+
+| category_name   | formatted_subtotal | product_count |
+|-----------------|--------------------|---------------|
+| Beverages       | 269,283.78         | 12            |
+| Dairy Products  | 235,299.29         | 10            |
+| Confections     | 167,580.98         | 13            |
+| Meat/Poultry    | 163,641.31         | 6             |
+| Seafood         | 132,094.24         | 12            |
+| Condiments      | 106,094.09         | 13            |
+| Produce         | 99,984.58          | 5             |
+| Grains/Cereals  | 95,744.59          | 7             |
+
+
 ### Total sales per product.
 This query uses a subquery that retrieves data from two tables, `order_details` and `products`. The subquery retrieves the columns `products.product_name`, and the subtotal as calculated by the equation `SUM(order_details.unit_price * order_details.quantity * (1 - discount))`. It also retrieves the formatted subtotal by wrapping the same equation in the `FORMAT()` function.
 
@@ -384,8 +502,19 @@ FROM (
 ) AS TotalSalesPerProduct;
 ```
 
+The result:<br>
+
+| product_name             | formatted_subtotal |
+|--------------------------|--------------------|
+| Côte de Blaye            | 141,396.74         |
+| Thüringer Rostbratwurst  | 80,987.62          |
+| Raclette Courdavault     | 71,155.70          |
+| Tarte au sucre           | 47,234.97          |
+| Camembert Pierrot        | 46,825.48          |
+
+
 ### Category product count.
-This query retrieves data from two tables, `categories` and `products`. There are only two columns in the `SELECT` statement, one to represent the category name (`categories.category_name`) and one to represent the total distinct products (`COUNT(DISTINCT products.product_id)`). 
+This query retrieves data from two tables, `categories` and `products`. There are only two columns in the `SELECT` statement, one to represent the category name (`categories.category_name`) and one to represent the total distinct products (`COUNT(DISTINCT products.product_id)`).
 
 The results are then grouped by the category name (`categories.category_name`).
 ```
@@ -394,3 +523,16 @@ FROM categories
 JOIN products USING (category_id)
 GROUP BY categories.category_name;
 ```
+
+The result:<br>
+
+| category_name   | product_count |
+|-----------------|---------------|
+| Beverages       | 12            |
+| Condiments      | 13            |
+| Confections     | 13            |
+| Dairy Products  | 10            |
+| Grains/Cereals  | 7             |
+| Meat/Poultry    | 6             |
+| Produce         | 5             |
+| Seafood         | 12            |
