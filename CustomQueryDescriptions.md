@@ -134,9 +134,9 @@ The result:<br>
 ### View all products and their sales per quarter of each year.
 This query combines data from three tables, `products`, `order_details`, and `orders`. The `SELECT` statement specifies five columns; the product name, quarters 1-4 with the product's total sales for the quarter, and the year. This data is grouped together using `product_name` and `order_year` via the `GROUP BY` clause to ensure the data is organized by each product and the year the sales were made.
 
-In the `SELECT` statement, the query uses a `CASE` statement within the `SUM` function to calculate the total sales for each product per quarter. It checks the order date's quarter and calculates the sum of sales for that period by multiplying the `unit_price` by the `quantity` of products sold and adjusting for any `discount` (`order_details.unit_price * order_details.quantity * (1 - discount)`). 
+In the `SELECT` statement, the query uses a `CASE` statement within the `SUM()` function to calculate the total sales for each product per quarter. It checks the order date's quarter and calculates the sum of sales for that period by multiplying the `unit_price` by the `quantity` of products sold and adjusting for any `discount` (`order_details.unit_price * order_details.quantity * (1 - discount)`). 
 
-If the condition is not met (i.e., the order date does not fall within the specified quarter in the `CASE` statement), the `ELSE` clause sets the value to `0`; effectively excluding those sales from the sum. A `FORMAT` function is then used to format the sum of sales as a decimal with 0 decimal places. The columns are aliased as `qtr_1`, `qtr_2`, `qtr_3`, and `qtr_4`.
+If the condition is not met (i.e., the order date does not fall within the specified quarter in the `CASE` statement), the `ELSE` clause sets the value to `0`; effectively excluding those sales from the sum. A `FORMAT()` function is then used to format the sum of sales as a decimal with 0 decimal places. The columns are aliased as `qtr_1`, `qtr_2`, `qtr_3`, and `qtr_4`.
 
 ```
 SELECT products.product_name,
@@ -242,7 +242,7 @@ There is a subquery in the main query's `FROM` statement which creates a table t
 
 The two "subtotal" columns calculate the subtotal by multiplying the product's price (`order_details.unit_price`) by the number of products sold (`order_details.quantity`), and then accounts for any discounts by multiplying these two columns by ***(1 - `order_details.discount`)***.
 
-Since the aggregate function `SUM` is used, the data must be grouped. Here, the data is grouped by `product_id`, with the total sales of that product represented in the `subtotal` column. 
+Since the aggregate function `SUM()` is used, the data must be grouped. Here, the data is grouped by `product_id`, with the total sales of that product represented in the `subtotal` column. 
 
 ```
 SELECT product_id, product_name, formatted_subtotal 

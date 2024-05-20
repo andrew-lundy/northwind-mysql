@@ -472,3 +472,7 @@ SELECT categories.category_name, COUNT(DISTINCT products.product_id) AS product_
 FROM categories
 JOIN products USING (category_id)
 GROUP BY categories.category_name;
+
+
+
+
