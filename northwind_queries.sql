@@ -348,7 +348,7 @@ SELECT @average;
 -- 1. Product Sales Analysis: How can we assess the performance of individual products in terms of sales? Are there specific products that consistently outperform others?
 -- To accomplish this, I wrote a query that finds all products and their total sales (subtotals). Then, it finds the average of those subtotals.
 -- This would indicate a product that performs better than average.
-SELECT product_id, product_name, formatted_subtotal 
+SELECT product_name, formatted_subtotal 
 FROM (
 	SELECT order_details.product_id AS product_id,
 	products.product_name AS product_name, 
@@ -415,7 +415,6 @@ SELECT product_name, quarter, FORMAT(subtotal, 2) AS subtotal, category_name
 FROM RankedProducts
 WHERE product_rank <= 3;
 
-
 -- Find the top 3 suppliers based on the number of products they sell.
 WITH RankedSuppliers AS (
 	SELECT suppliers.supplier_id, 
@@ -430,7 +429,6 @@ SELECT supplier_id, company_name, product_count
 FROM RankedSuppliers
 WHERE supplier_rank <= 3;
 
-
 -- Find the top shipper.
 SELECT shippers.company_name, COUNT(orders.ship_via) AS shipment_count
 FROM orders
@@ -438,7 +436,6 @@ JOIN shippers ON orders.ship_via = shippers.shipper_id
 GROUP BY shippers.company_name
 ORDER BY shipment_count DESC
 LIMIT 1;
-
 
 -- Categories and their subtotals and product count
 WITH CategorySales AS (
@@ -473,6 +470,33 @@ FROM categories
 JOIN products USING (category_id)
 GROUP BY categories.category_name;
 
+WITH RankedProducts AS (
+	SELECT QUARTER(orders.order_date) AS quarter,
+		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal
+    FROM order_details
+    JOIN products ON order_details.product_id = products.product_id
+    JOIN orders ON order_details.order_id = orders.order_id
+    JOIN categories ON categories.category_id = products.category_id
+	GROUP BY QUARTER(orders.order_date)
+	ORDER BY QUARTER(orders.order_date)
+)
+SELECT quarter, FORMAT(subtotal, 2) AS subtotal
+FROM RankedProducts;
 
-
-
+WITH RankedProducts AS (
+    SELECT 
+        YEAR(orders.order_date) AS year,
+        QUARTER(orders.order_date) AS quarter,
+        SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal
+    FROM order_details
+    JOIN products ON order_details.product_id = products.product_id
+    JOIN orders ON order_details.order_id = orders.order_id
+    JOIN categories ON categories.category_id = products.category_id
+    GROUP BY YEAR(orders.order_date), QUARTER(orders.order_date)
+)
+SELECT 
+    year, 
+    quarter, 
+    FORMAT(subtotal, 2) AS subtotal
+FROM RankedProducts
+ORDER BY year, quarter;
