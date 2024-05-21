@@ -469,34 +469,3 @@ SELECT categories.category_name, COUNT(DISTINCT products.product_id) AS product_
 FROM categories
 JOIN products USING (category_id)
 GROUP BY categories.category_name;
-
-WITH RankedProducts AS (
-	SELECT QUARTER(orders.order_date) AS quarter,
-		SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal
-    FROM order_details
-    JOIN products ON order_details.product_id = products.product_id
-    JOIN orders ON order_details.order_id = orders.order_id
-    JOIN categories ON categories.category_id = products.category_id
-	GROUP BY QUARTER(orders.order_date)
-	ORDER BY QUARTER(orders.order_date)
-)
-SELECT quarter, FORMAT(subtotal, 2) AS subtotal
-FROM RankedProducts;
-
-WITH RankedProducts AS (
-    SELECT 
-        YEAR(orders.order_date) AS year,
-        QUARTER(orders.order_date) AS quarter,
-        SUM(order_details.unit_price * order_details.quantity * (1 - discount)) AS subtotal
-    FROM order_details
-    JOIN products ON order_details.product_id = products.product_id
-    JOIN orders ON order_details.order_id = orders.order_id
-    JOIN categories ON categories.category_id = products.category_id
-    GROUP BY YEAR(orders.order_date), QUARTER(orders.order_date)
-)
-SELECT 
-    year, 
-    quarter, 
-    FORMAT(subtotal, 2) AS subtotal
-FROM RankedProducts
-ORDER BY year, quarter;
