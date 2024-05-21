@@ -245,7 +245,7 @@ The two "subtotal" columns calculate the subtotal by multiplying the product's p
 Since the aggregate function `SUM()` is used, the data must be grouped. Here, the data is grouped by `product_id`, with the total sales of that product represented in the `subtotal` column. 
 
 ```
-SELECT product_id, product_name, formatted_subtotal 
+SELECT product_name, formatted_subtotal 
 FROM (
 	SELECT order_details.product_id AS product_id,
 	products.product_name AS product_name, 

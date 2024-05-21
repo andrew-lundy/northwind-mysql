@@ -28,11 +28,10 @@ I have added the world regions because the `suppliers` table containes a `region
 The project does not contain any installation steps. To create the tables and add the data, use the [northwind_creation_and_insertion.sql](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_creation_and_insert.sql) file.
 
 ## Schema
-The database schema can be found in [northwind_schema.pdf](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_schema.pdf).
+The database schema can be opened in MySQL Workbench and is found in [Northwind-ER-Diagram](https://github.com/andrew-lundy/northwind-mysql/blob/main/Northwind-ER-Diagram.mwb). 
 
-There is currently no model from MySQL Workbench in the repo due to a bug with MySQL Workbench on macOS Sonoma. See issues:
-- [https://discussions.apple.com/thread/255164269](https://discussions.apple.com/thread/255164269).
-- [https://forums.mysql.com/read.php?152,710054,710058](https://forums.mysql.com/read.php?152,710054,710058).
+It can also be found as a PDF in [northwind_schema.pdf](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_schema.pdf).
+
 
 ## Custom Query Documentation
 The documentation for the custom queries I have written can be found here: [CustomQueryDescriptions.md](https://github.com/andrew-lundy/northwind-mysql/blob/main/CustomQueryDescriptions.md).
