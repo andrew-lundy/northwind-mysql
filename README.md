@@ -1,5 +1,5 @@
 # Northwind MySQL Queries & Reworked Database Structure
-## Overview
+## Description
 In the process of learning MySQL, I have reworked the Northwind database to use world regions. I have also written a collection of sample queries based on prompts from [geeksengine.com](https://www.geeksengine.com/database/problem-solving/northwind-queries-part-1.php), alongside a number of custom prompts.
 <br><br> 
 I have added the world regions because the `suppliers` table containes a `region` column that uses the 4 main regions. The rest of the database does not use these same values whenever a "region" is mentioned. The `ship_region` from the `orders` table, `region` from the `employees` table, `region` from the `customers` table - they all reference states or provinces.
@@ -24,8 +24,9 @@ I have added the world regions because the `suppliers` table containes a `region
 - [x] Add orders from APAC
 - [x] Write custom queries that focus on product performance; top products per region, top salesperson per region, etc.
 <br><br>
+
 ## Installation
-The project does not contain any installation steps. To create the tables and add the data, use the [northwind_creation_and_insertion.sql](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_creation_and_insert.sql) file.
+
 
 ## Schema
 The database schema can be opened in MySQL Workbench and is found in [Northwind-ER-Diagram](https://github.com/andrew-lundy/northwind-mysql/blob/main/Northwind-ER-Diagram.mwb). 
@@ -35,3 +36,6 @@ It can also be found as a PDF in [northwind_schema.pdf](https://github.com/andre
 
 ## Custom Query Documentation
 The documentation for the custom queries I have written can be found here: [CustomQueryDescriptions.md](https://github.com/andrew-lundy/northwind-mysql/blob/main/CustomQueryDescriptions.md).
+
+## Data Visualizations
+There are some [data visualizations in Grafana](https://andrewlundy.grafana.net/dashboard/snapshot/FFZBgH7U9ncMn2dwVfcpdFNn9SWIFm4e) to go along with a few of the queries.
