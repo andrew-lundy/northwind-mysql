@@ -26,12 +26,17 @@ I have added the world regions because the `suppliers` table containes a `region
 <br><br>
 
 ## Installation
+This Bash script creates a database, then it proceeds to create the tables and insert the Northwind sample data.
 
+1. Clone the repo or download the ZIP file.
+2. Locate and open the Bash file named `northwind_table_creation.sh`.
+3. Edit the script to enter the username, password, and host information into their respective variables.
+4. Navigate to the project directory in your terminal and run the script by executing the command `bash northwind_table_creation.sh`.
 
 ## Schema
-The database schema can be opened in MySQL Workbench and is found in [Northwind-ER-Diagram](https://github.com/andrew-lundy/northwind-mysql/blob/main/Northwind-ER-Diagram.mwb). 
+The database schema can be opened in MySQL Workbench and is found in [Northwind-ER-Diagram](https://github.com/andrew-lundy/northwind-mysql/blob/main/Northwind-ER-Diagram.mwb).
 
-It can also be found as a PDF in [northwind_schema.pdf](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_schema.pdf).
+It can also be opened as a PDF in [northwind_schema.pdf](https://github.com/andrew-lundy/northwind-mysql/blob/main/northwind_schema.pdf).
 
 
 ## Custom Query Documentation
